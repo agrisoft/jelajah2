@@ -21,7 +21,7 @@ var modal_basemap = "<div id='modal_basemap' class='modal bottom-sheet'><div cla
 
 var ukur_drop = "<ul id='ukur' class='dropdown-content'><li><a href='#!'>one</a></li><li><a href='#!'>two</a></li><li class='divider'></li><li><a href='#!'>three</a></li><li><a href='#!'><i class='material-icons'>view_module</i>four</a></li><li><a href='#!'><i class='material-icons'>cloud</i>five</a></li></ul>"
 
-var layers = "<ul class='collapsible' data-collapsible='expandable'><li><div class='collapsible-header'><div class='layer_control'><i class='material-icons'>check_circle</i>First</div><i class='material-icons right'>comment</i><i class='material-icons right'>loupe</i><i class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><span>Lorem ipsum dolor sit amet.</span></div></li><li><div class='collapsible-header'><div class='layer_control'><i class='material-icons'>check_circle</i>Second</div><i class='material-icons right'>comment</i><i class='material-icons right'>loupe</i><i class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><span>Lorem ipsum dolor sit amet.</span></div></li><li><div class='collapsible-header'><div class='layer_control'><i class='material-icons'>check_circle</i>Third</div><i class='material-icons right'>comment</i><i class='material-icons right'>loupe</i><i class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><span>Lorem ipsum dolor sit amet.</span></div></li></ul>"
+var layers = "<ul id='sortableul' class='collapsible' data-collapsible='expandable'><li><div class='collapsible-header'><div class='layer_control'><i class='material-icons'>check_circle</i>First</div><i class='material-icons right'>comment</i><i class='material-icons right'>loupe</i><i class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><span>Lorem ipsum dolor sit amet.</span></div></li><li><div class='collapsible-header'><div class='layer_control'><i class='material-icons'>check_circle</i>Second</div><i class='material-icons right'>comment</i><i class='material-icons right'>loupe</i><i class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><span>Lorem ipsum dolor sit amet.</span></div></li><li><div class='collapsible-header'><div class='layer_control'><i class='material-icons'>check_circle</i>Third</div><i class='material-icons right'>comment</i><i class='material-icons right'>loupe</i><i class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><span>Lorem ipsum dolor sit amet.</span></div></li></ul>"
 
 var box_ukur = "<div id='box_ukur'><div class='input-field'><select id='select_ukur'><option value='' disabled selected>Pilih pengukuran</option><option value='1'>Panjang</option><option value='2'>Luas</option></select><label>Geometri</label></div><div id='panjang' class='input-field' style='display:none;'><select><option value='' disabled selected>Satuan</option><option value='1'>Meter (m)</option><option value='2'>Kilometer (km)</option><option value='3'>Mil</option></select><label>Satuan</label></div><div id='luas' class='input-field' style='display:none;'><select><option value='' disabled selected>Satuan</option><option value='1'>Meter Persegi (m2)</option><option value='2'>Kilometer Persegi (km2)</option><option value='3'>Mil Persegi</option></select><label>Satuan</label></div></div>"
 
@@ -61,7 +61,9 @@ $(document).ready(function(){
     // the "href" attribute of the modal trigger must specify the modal ID that wants to be triggered
     $('.modal').modal();
     $('.collapsible').collapsible();
-    $('ul.collapsible').sortable();
+    var sortableel = document.getElementById('sortableul');
+    var sortableul = Sortable.create(sortableel);
+    // $('ul.collapsible').sortable();
     $('select').material_select();
     $('.button-collapse').sideNav({
         menuWidth: 500, // Default is 300
