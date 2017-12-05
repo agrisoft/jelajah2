@@ -1,0 +1,67 @@
+#jelajah {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+#jelajah_map {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.jelajah_burger {
+  top: 65px;
+  left: .5em;
+  color: #ffffff;
+}
+
+.ol-touch .jelajah_burger {
+  top: 80px;
+  color: #ffffff;
+}
+
+.fixed-action-btn {
+    position: fixed;
+    right: 23px;
+    top: 23px;
+    padding-top: 15px;
+    margin-bottom: 0;
+    z-index: 997;
+}
+
+body.dragging, body.dragging * {
+  cursor: move !important;
+}
+
+.dragged {
+  position: absolute;
+  opacity: 0.5;
+  z-index: 2000;
+}
+
+ul.collapsible li.placeholder {
+  position: relative;
+  /** More li styles **/
+}
+ul.collapsible li.placeholder:before {
+  position: absolute;
+  /** Define arrowhead **/
+}
+
+#slide-out {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+#cari_geocoding {
+  color: #000;
+}
+
+#caribtn {
+    top: 23px;
+}
