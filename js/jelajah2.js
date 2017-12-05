@@ -15,7 +15,7 @@ var fab_button = "<div class='fixed-action-btn vertical click-to-toggle'><a clas
 
 var modal_addlayer = "<div id='modal_addlayer' class='modal bottom-sheet'><div class='modal-content'><h4>Tambah Layer</h4><ul id='tabs_addlayer' class='tabs'><li class='tab col s3'><a class='active'  href='#add_dataset'>Dataset</a></li><li class='tab col s3'><a href='#add_url'>URL</a></li><li class='tab col s3'><a href='#add_file'>File</a></li><li class='tab col s3'><a href='#add_simpul'>Simpul</a></li></ul><div id='add_dataset' class='col s12 blue'>Test 1</div><div id='add_url' class='col s12 red'>Test 2</div><div id='add_file' class='col s12 green'>Test 3</div><div id='add_simpul' class='col s12 yellow'>Test 3</div></div></div>"
 
-var modal_layer = "<div id='modal_layer' class='modal bottom-sheet'><div class='modal-content'><h4>Layer</h4><p>A bunch of text</p></div><div class='modal-footer'><a href='#!' class='modal-action modal-close waves-effect waves-green btn'>Tutup</a></div></div>"
+var modal_cari = "<div id='modal_cari' class='modal bottom-sheet'><div class='modal-content'><h4>Hasil pencarian</h4><ul id='list_hasil'></ul></div></div>"
 
 var modal_basemap = "<div id='modal_basemap' class='modal bottom-sheet'><div class='modal-content'><h4>Basemap</h4><div class='row'><div class='col s6 m3 l2'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title'>RBI</span></div><div class='card-content'><p>Rupa Bumi Indonesia</p></div></div></div><div class='col s6 m3 l2'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title'>RBI</span></div><div class='card-content'><p>Rupa Bumi Indonesia</p></div></div></div><div class='col s6 m3 l2'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title'>RBI</span></div><div class='card-content'><p>Rupa Bumi Indonesia</p></div></div></div><div class='col s6 m3 l2'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title'>RBI</span></div><div class='card-content'><p>Rupa Bumi Indonesia</p></div></div></div></div></div</div>"
 
@@ -28,7 +28,7 @@ var box_ukur = "<div id='box_ukur'><div class='input-field'><select id='select_u
 $('#' + base_div).append(slider_content);
 $('#' + base_div).append(geocoding_content);
 $('#' + base_div).append(modal_addlayer);
-$('#' + base_div).append(modal_layer);
+$('#' + base_div).append(modal_cari);
 $('#' + base_div).append(modal_basemap);
 $('#' + base_div).append(ukur_drop);
 $('#' + base_div).append(box_ukur);
@@ -86,6 +86,11 @@ $(document).ready(function(){
     );
 });
 
+
+// Functions
+function randomNumber() {
+    return Math.floor((Math.random() * 1000) + 1);
+}
 
 // Custom control
 window.app = {};
@@ -147,4 +152,55 @@ var map = new ol.Map({
     minZoom: 4,
     maxZoom: 22
   })
+});
+
+var layer = []
+var hasil_cari;
+
+$("#caribtn").click(function() {
+    geocaritext = document.getElementById('cari_geocoding').value;
+    $.get("http://nominatim.openstreetmap.org/search?format=jsonv2&polygon_geojson=1&q=" + geocaritext, function(data, status) {
+        window.hasil_cari = data;
+        // console.log(data);
+        $('#list_hasil').empty();
+        for (i=0;i<data.length;i++) {
+          lihtml = "<li id='"+ data[i].place_id +"' class='collection-item avatar'><i id='"+ data[i].place_id +"' class='material-icons circle green piccari'>add_location</i><span id='"+ data[i].place_id +"' class='title'>" + data[i].display_name + "</span><p id='"+ data[i].place_id +"' >" + data[i].category +"<br>" + data[i].type + "</p></li>";
+          $('#list_hasil').append(lihtml);
+          console.log(data[i]);
+        }
+        // setTimeout(function() {
+        //     map.addLayer(layer[rndlayerid]);
+        //     extent = layer[rndlayerid].getSource().getExtent();
+        //     map.getView().fit(extent, map.getSize());
+        //     $("#layerlistid ul").append('<li class="ui-state-default" id="' + rndlayerid + '"><strong>Cari :</strong> ' + data[0].display_name + ' <input type="checkbox" checked="true" id="c_' + rndlayerid + '" onchange="layerVis(' + rndlayerid + ')"><span class="fa fa-times" aria-hidden="true"  id="r_' + rndlayerid + '" onClick="layerRm(' + rndlayerid + ')"></span><span class="fa fa-map-o" aria-hidden="true"  id="z_' + rndlayerid + '" onClick="layerZm(' + rndlayerid + ')"></span></li>');
+        // }, 2000);
+        $('#modal_cari').modal('open');
+    });
+});
+
+$('#list_hasil').on('click', function(e) {
+    p_id = $(e.target).attr('id');
+    console.log($(e.target).attr('id'));
+    for (i=0;i<hasil_cari.length;i++) {
+      if (hasil_cari[i].place_id == String(p_id)) {
+        feature = new ol.format.GeoJSON().readFeatures(hasil_cari[i].geojson, {
+            featureProjection: 'EPSG:4326'
+        });
+
+        rndlayerid = randomNumber();
+        layer[rndlayerid] = new ol.layer.Vector({
+            title: hasil_cari[i].display_name,
+            source: new ol.source.Vector({
+                features: feature,
+                params: {
+                    'LAYERS': String(hasil_cari[i].display_name)
+                }
+            })
+        });
+
+        map.addLayer(layer[rndlayerid]);
+        extent = layer[rndlayerid].getSource().getExtent();
+        map.getView().fit(extent, map.getSize());
+      }
+    }
 });
