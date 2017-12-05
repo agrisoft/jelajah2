@@ -31,14 +31,14 @@ body{
   color: #ffffff;
 }
 
-.fixed-action-btn {
+/*.fixed-action-btn {
     position: fixed;
     right: 23px;
     top: 23px;
     padding-top: 15px;
     margin-bottom: 0;
     z-index: 997;
-}
+}*/
 
 body.dragging, body.dragging * {
   cursor: move !important;
@@ -122,7 +122,7 @@ i.right {
 
 .side-nav {
     position: fixed;
-    width: 300px;
+    width: 500px;
     max-width: 80%;
     left: 0;
     top: 0;
