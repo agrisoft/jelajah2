@@ -161,6 +161,7 @@ i.right {
 }
 
 .avatar {
+    position: relative;
     min-height: 84px;
     padding-left: 72px;
     position: relative;
@@ -168,7 +169,8 @@ i.right {
     border-right: 1px solid #ddd;
     border-left: 1px solid #ddd;
     border-bottom: 1px solid #ddd;
-    /*margin: .5rem 0 1rem 0;*/
+    vertical-align: middle;
+    /* margin: .5rem 0 1rem 0; */
 }
 
 li.avatar:hover {
@@ -178,12 +180,19 @@ li.avatar:hover {
 .piccari {
     position: relative;
     right: 50px;
-    top: 36px;
+    top: 28px;
 }
 
 .title {
-    position: relative;
-    right: 25px;
-    top: 10px;
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 20px;
+    right: 0px;
+    width: 80%;
+    height: 50%;
+    margin: auto;
     font-weight: bold;
+    /* height: 60px; */
+    /* line-height: 48px; */
 }
