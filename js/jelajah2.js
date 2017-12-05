@@ -8,7 +8,7 @@ var map_div = "jelajah_map";
  var slider_content = "<ul id='slide-out' class='side-nav'><li><h4> Layer</h4></li><li id='layers_item'></li></ul><a href='#' data-activates='slide-out' class='button-collapse' style='display:none';><i class='material-icons'>menu</i></a>";
 
 // Init geocoding UI
-var geocoding_content = "<div class='row'><div class='col s12'><div class='row'><div class='col s5'></div><div class='input-field col s6'><input placeholder='Cari lokasi' id='cari_geocoding' type='text' class='validate'></div><a id='caribtn' class='col s1 waves-effect waves-light btn'><i class='material-icons left'>search</i>Cari</a></div></div></div>"
+var geocoding_content = "<div class='row'><div class='col s12'><div class='row'><div class='col s4 l5'></div><div class='input-field col s5 m6'><input placeholder='Cari lokasi' id='cari_geocoding' type='text' class='validate'></div><a id='caribtn' class='col s3 m2 l1 waves-effect waves-light btn'><i class='material-icons left'>search</i>Cari</a></div></div></div>"
 
 // eksperimen
 var fab_button = "<div class='fixed-action-btn vertical'><a id='main_menu' class='btn-floating btn-large cyan darken-4 tooltipped' data-position='left' data-tooltip='Menu Utama'><i class='material-icons'>menu</i></a><ul><li><a class='btn-floating cyan lighten-1 modal-trigger tooltipped' href='#modal_addlayer' data-position='left' data-tooltip='Tambah Layer'><i class='material-icons'>playlist_add</i></a></li><li><a class='btn-floating cyan tooltipped button-collapse' data-position='left' data-tooltip='Layer' href='#' data-activates='slide-out'><i class='material-icons'>layers</i></a></li><li><a id='ukur_btn' class='btn-floating cyan darken-1 tooltipped' data-position='left' data-tooltip='Ukur'><i class='material-icons'>border_color</i></a></li><li><a class='btn-floating cyan darken-2 tooltipped' data-position='left' data-tooltip='Cetak'><i class='material-icons'>print</i></a></li><li><a class='btn-floating cyan darken-3 modal-trigger tooltipped' href='#modal_basemap' data-position='left'  data-tooltip='Basemap'><i class='material-icons'>public</i></a></li></ul></div>"
@@ -102,6 +102,16 @@ $(document).ready(function(){
 // Functions
 function randomNumber() {
     return Math.floor((Math.random() * 1000) + 1);
+}
+
+function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
 
 // Custom control
