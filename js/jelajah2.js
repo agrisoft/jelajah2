@@ -8,7 +8,7 @@ var map_div = "jelajah_map";
  var slider_content = "<ul id='slide-out' class='side-nav'><li><h4> Layer</h4></li><li id='layers_item'></li></ul><a href='#' data-activates='slide-out' class='button-collapse' style='display:none';><i class='material-icons'>menu</i></a>";
 
 // Init geocoding UI
-var geocoding_content = "<div class='row'><div class='col s12'><div class='row'><div class='col s3'></div><div class='input-field col s5'><input placeholder='Cari lokasi' id='cari_geocoding' type='text' class='validate'></div><a id='caribtn' class='col s1 waves-effect waves-light btn'><i class='material-icons left'>search</i>Cari</a><div class='col s3'></div></div></div></div>"
+var geocoding_content = "<div class='row'><div class='col s12'><div class='row'><div class='col s5'></div><div class='input-field col s6'><input placeholder='Cari lokasi' id='cari_geocoding' type='text' class='validate'></div><a id='caribtn' class='col s1 waves-effect waves-light btn'><i class='material-icons left'>search</i>Cari</a></div></div></div>"
 
 // eksperimen
 var fab_button = "<div class='fixed-action-btn vertical click-to-toggle'><a class='btn-floating btn-large cyan darken-4 tooltipped' data-tooltip='Menu Utama'><i class='material-icons'>menu</i></a><ul><li><a class='btn-floating cyan lighten-1 modal-trigger tooltipped' href='#modal_addlayer' data-tooltip='Tambah Layer'><i class='material-icons'>playlist_add</i></a></li><li><a class='btn-floating cyan tooltipped button-collapse' data-tooltip='Layer' href='#' data-activates='slide-out'><i class='material-icons'>layers</i></a></li><li><a class='btn-floating cyan darken-1 tooltipped dropdown-button' data-tooltip='Ukur' href='#' data-activates='ukur'><i class='material-icons'>border_color</i></a></li><li><a class='btn-floating cyan darken-2 tooltipped' data-tooltip='Cetak'><i class='material-icons'>print</i></a></li><li><a class='btn-floating cyan darken-3 modal-trigger tooltipped' href='#modal_basemap' data-tooltip='Basemap'><i class='material-icons'>public</i></a></li></ul></div>"
@@ -100,13 +100,14 @@ ol.inherits(app.JelajahBurgerControl, ol.control.Control);
 // Init map
 
 var map = new ol.Map({
-  controls: ol.control.defaults({
-    attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
-      collapsible: true
-    })
-  }).extend([
-    new app.JelajahBurgerControl()
-  ]),
+  // controls: ol.control.defaults({
+  //   attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
+  //     collapsible: true
+  //   })
+  // })
+  // .extend([
+  //   new app.JelajahBurgerControl()
+  // ]),
   layers: [
     new ol.layer.Tile({
       source: new ol.source.OSM()
