@@ -171,7 +171,7 @@ var layer_rbibaru = new ol.layer.Tile({
           preload: Infinity,
           source: new ol.source.TileWMS({
             url: 'http://dev1.agrisoft-cb.com:8080/geoserver/gwc/service/wms',
-            params: {LAYERS: 'RBI_250K:basemap_rbi', VERSION: '1.1.1'}
+            params: {LAYERS: 'rbi', VERSION: '1.1.1'}
           })
         });
 

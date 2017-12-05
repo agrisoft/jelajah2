@@ -161,8 +161,8 @@ i.right {
 }
 
 .avatar {
-    position: relative;
-    min-height: 84px;
+    /* position: relative; */
+    min-height: 90px;
     padding-left: 72px;
     position: relative;
     border-top: 1px solid #ddd;
@@ -170,6 +170,7 @@ i.right {
     border-left: 1px solid #ddd;
     border-bottom: 1px solid #ddd;
     vertical-align: middle;
+    text-align: left;
     /* margin: .5rem 0 1rem 0; */
 }
 
@@ -185,14 +186,18 @@ li.avatar:hover {
 
 .title {
     position: absolute;
+    display: table;
     top: 0px;
     bottom: 0px;
-    left: 20px;
-    right: 0px;
-    width: 80%;
-    height: 50%;
+    left: 72px;
+    /* right: 0px; */
+    width: 75%;
+    height: auto;
+    /* min-height: 84px; */
     margin: auto;
     font-weight: bold;
-    /* height: 60px; */
-    /* line-height: 48px; */
+    /* height: 84px; */
+    /* line-height: inherit; */
+    /* vertical-align: middle; */
+    text-align: left;
 }
