@@ -273,6 +273,8 @@ $('#list_hasil').on('click', function(e) {
         map.addLayer(layer[rndlayerid]);
         extent = layer[rndlayerid].getSource().getExtent();
         map.getView().fit(extent, map.getSize());
+        listappend = "<li id='"+rndlayerid+"'><div class='collapsible-header'><div class='layer_control'><i class='material-icons'>check_circle</i>"+hasil_cari[i].display_name+"</div><i class='material-icons right'>comment</i><i class='material-icons right'>loupe</i><i class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><span>Lorem ipsum dolor sit amet.</span></div></li>"
+        $('#sortableul').append(listappend);
       }
     }
 });
