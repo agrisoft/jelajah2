@@ -240,12 +240,6 @@ $("#caribtn").click(function() {
           $('#list_hasil').append(lihtml);
           console.log(data[i]);
         }
-        // setTimeout(function() {
-        //     map.addLayer(layer[rndlayerid]);
-        //     extent = layer[rndlayerid].getSource().getExtent();
-        //     map.getView().fit(extent, map.getSize());
-        //     $("#layerlistid ul").append('<li class="ui-state-default" id="' + rndlayerid + '"><strong>Cari :</strong> ' + data[0].display_name + ' <input type="checkbox" checked="true" id="c_' + rndlayerid + '" onchange="layerVis(' + rndlayerid + ')"><span class="fa fa-times" aria-hidden="true"  id="r_' + rndlayerid + '" onClick="layerRm(' + rndlayerid + ')"></span><span class="fa fa-map-o" aria-hidden="true"  id="z_' + rndlayerid + '" onClick="layerZm(' + rndlayerid + ')"></span></li>');
-        // }, 2000);
         $('#modal_cari').modal('open');
     });
 });
