@@ -482,10 +482,11 @@ $("#list_workspace").on('change', function() {
     $('#layers_item_list').empty();
     for (i = 0; i < raw_local_wms.length; i++) {
         if (raw_local_wms[i].workspace == s_workspace) {
-            item_html = "<li id='" + raw_local_wms[i].layer_nativename + "' class='collection-item'><input type='checkbox' id='" + raw_local_wms[i].layer_nativename + "'> <label id='" + raw_local_wms[i].layer_nativename + "' for='" + raw_local_wms[i].layer_nativename + "'><strong>" + raw_local_wms[i].workspace + "</strong> " + raw_local_wms[i].layer_name + "</li>";
+            item_html = "<li id='" + raw_local_wms[i].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + raw_local_wms[i].layer_nativename + "'>" + raw_local_wms[i].workspace + " " + raw_local_wms[i].layer_name + "</span></li>";
             $('#layers_item_list').append(item_html);
         } else if (s_workspace == 'SEMUA') {
-            item_html = "<li id='" + raw_local_wms[i].layer_nativename + "' class='collection-item'><input type='checkbox' id='" + raw_local_wms[i].layer_nativename + "'> <label id='" + raw_local_wms[i].layer_nativename + "' for='" + raw_local_wms[i].layer_nativename + "'><strong>" + raw_local_wms[i].workspace + "</strong> " + raw_local_wms[i].layer_name + "</li>";
+            item_html = "<li id='" + raw_local_wms[i].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + raw_local_wms[i].layer_nativename + "'>" + raw_local_wms[i].workspace + " " + raw_local_wms[i].layer_name + "</span></li>";
+            $('#layers_item_list').append(item_html)
             $('#layers_item_list').append(item_html);
         }
     }
