@@ -42,7 +42,6 @@ function uniqueArray(arr) {
 
 function olAddWMSLayer(serviceUrl, layername, layermark, min_x, min_y, max_x, max_y, layer_nativename) {
     rndlayerid = randomNumber()
-    console.log(rndlayerid)
     layer_source[rndlayerid] = new ol.source.TileWMS({
         url: serviceUrl,
         params: { LAYERS: layername, TILED: true }
@@ -56,6 +55,7 @@ function olAddWMSLayer(serviceUrl, layername, layermark, min_x, min_y, max_x, ma
         source: layer_source[rndlayerid]
     });
     map.addLayer(layer[rndlayerid]);
+    console.log(rndlayerid, layermark, layer[rndlayerid].get('title'))
     setTimeout(() => {
         listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><i id='getinfo' class='material-icons right'>comment</i><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
         $('#sortableul').append(listappend);
@@ -204,7 +204,7 @@ $.get(palapa_api_url + "getWMSlayers", function(data) {
     list_workspace = uniqueArray(listw);
     console.log(list_workspace);
     for (i = 0; i < data.length; i++) {
-        item_html = "<li id='" + data[i].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <strong>" + data[i].workspace + "</strong> " + data[i].layer_name + "</li>";
+        item_html = "<li id='" + data[i].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + data[i].layer_nativename + "'>" + data[i].workspace + " " + data[i].layer_name + "</span></li>";
         $('#layers_item_list').append(item_html);
     }
     for (k = 0; k < list_workspace.length; k++) {
@@ -401,8 +401,9 @@ $('#list_hasil').on('click', function(e) {
 });
 
 $('#layers_item_list').on('click', function(e) {
-    p_id = $(e.target).attr('id');
-    p_name = $("li [id='" + p_id + "'").text();
+    p_id = $(e.target).closest('li').attr('id');
+    // p_name = $("li [id='" + p_id + "'").text();
+    p_name = $(e.target).find('.layermark').first().text();
     p_state = $(e.target).find('#add_check').first().text();
     var min_x, min_y, max_x, max_y, layer_nativename;
     for (i = 0; i < raw_local_wms.length; i++) {
@@ -415,8 +416,36 @@ $('#layers_item_list').on('click', function(e) {
             layer_nativename = raw_local_wms[i].layer_nativename;
         }
     }
-    console.log(min_x, min_y, max_x, max_y)
-    console.log($(e.target).attr('id'));
+    if (p_name == '' || typeof(p_name) == 'undefined') {
+        p_name = $(e.target).closest('.layermark').first().text();
+        if (p_name == '' || typeof(p_name) == 'undefined') {
+            p_name = $(e.target).siblings('.layermark').first().text();
+        }
+    }
+    if (p_state == '' || typeof(p_state) == 'undefined') {
+        p_state = $(e.target).siblings('#add_check').first().text();
+        if (p_state == '' || typeof(p_state) == 'undefined') {
+            p_state = $(e.target).text();
+            if (p_state == 'check_box') {
+                $(e.target).text('check_box_outline_blank');
+            } else {
+                $(e.target).text('check_box');
+            }
+        } else {
+            if (p_state == 'check_box') {
+                $(e.target).siblings('#add_check').first().text('check_box_outline_blank');
+            } else {
+                $(e.target).siblings('#add_check').first().text('check_box');
+            }
+        }
+    } else {
+        if (p_state == 'check_box') {
+            $(e.target).find('#add_check').first().text('check_box_outline_blank');
+        } else {
+            $(e.target).find('#add_check').first().text('check_box');
+        }
+    }
+    console.log(p_state, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
     if (layer.length > 0) {
         count = 0
         for (j = 0; j < layer.length; j++) {
@@ -440,11 +469,6 @@ $('#layers_item_list').on('click', function(e) {
         }
     } else {
         olAddWMSLayer(local_gs, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
-    }
-    if (p_state == 'check_box') {
-        $(e.target).find('#add_check').first().text('check_box_outline_blank');
-    } else {
-        $(e.target).find('#add_check').first().text('check_box');
     }
 })
 
