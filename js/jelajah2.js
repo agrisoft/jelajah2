@@ -401,8 +401,12 @@ $('#list_hasil').on('click', function(e) {
 });
 
 $('#layers_item_list').on('click', function(e) {
-    p_id = $(e.target).closest('li').attr('id');
-    // p_name = $("li [id='" + p_id + "'").text();
+    p_id = $(e.target).attr('id');
+    if (p_id == '' || typeof(p_id) == 'undefined' || p_id == 'add_check') {
+        p_id = $(e.target).closest('li').attr('id');
+    }
+    console.log(p_id)
+        // p_name = $("li [id='" + p_id + "'").text();
     p_name = $(e.target).find('.layermark').first().text();
     p_state = $(e.target).find('#add_check').first().text();
     var min_x, min_y, max_x, max_y, layer_nativename;
@@ -416,6 +420,7 @@ $('#layers_item_list').on('click', function(e) {
             layer_nativename = raw_local_wms[i].layer_nativename;
         }
     }
+    console.log(p_state, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
     if (p_name == '' || typeof(p_name) == 'undefined') {
         p_name = $(e.target).closest('.layermark').first().text();
         if (p_name == '' || typeof(p_name) == 'undefined') {
@@ -445,7 +450,6 @@ $('#layers_item_list').on('click', function(e) {
             $(e.target).find('#add_check').first().text('check_box');
         }
     }
-    console.log(p_state, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
     if (layer.length > 0) {
         count = 0
         for (j = 0; j < layer.length; j++) {
