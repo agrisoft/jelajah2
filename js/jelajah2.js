@@ -405,10 +405,6 @@ $('#layers_item_list').on('click', function(e) {
     if (p_id == '' || typeof(p_id) == 'undefined' || p_id == 'add_check') {
         p_id = $(e.target).closest('li').attr('id');
     }
-    console.log(p_id)
-        // p_name = $("li [id='" + p_id + "'").text();
-    p_name = $(e.target).find('.layermark').first().text();
-    p_state = $(e.target).find('#add_check').first().text();
     var min_x, min_y, max_x, max_y, layer_nativename;
     for (i = 0; i < raw_local_wms.length; i++) {
         // console.log(raw_local_wms[i].layer_nativename)
@@ -420,60 +416,65 @@ $('#layers_item_list').on('click', function(e) {
             layer_nativename = raw_local_wms[i].layer_nativename;
         }
     }
-    console.log(p_state, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
-    if (p_name == '' || typeof(p_name) == 'undefined') {
-        p_name = $(e.target).closest('.layermark').first().text();
+    setTimeout(() => {
+        p_name = $(e.target).find('.layermark').first().text();
         if (p_name == '' || typeof(p_name) == 'undefined') {
-            p_name = $(e.target).siblings('.layermark').first().text();
-        }
-    }
-    if (p_state == '' || typeof(p_state) == 'undefined') {
-        p_state = $(e.target).siblings('#add_check').first().text();
-        if (p_state == '' || typeof(p_state) == 'undefined') {
-            p_state = $(e.target).text();
-            if (p_state == 'check_box') {
-                $(e.target).text('check_box_outline_blank');
-            } else {
-                $(e.target).text('check_box');
+            p_name = $(e.target).closest('.layermark').first().text();
+            if (p_name == '' || typeof(p_name) == 'undefined') {
+                p_name = $(e.target).siblings('.layermark').first().text();
             }
-        } else {
+        }
+        p_state = $(e.target).find('#add_check').first().text();
+        if (p_state == '' || typeof(p_state) == 'undefined') {
+            p_state = $(e.target).siblings('#add_check').first().text();
+            console.log(p_state, 'A')
             if (p_state == 'check_box') {
                 $(e.target).siblings('#add_check').first().text('check_box_outline_blank');
             } else {
                 $(e.target).siblings('#add_check').first().text('check_box');
             }
-        }
-    } else {
-        if (p_state == 'check_box') {
-            $(e.target).find('#add_check').first().text('check_box_outline_blank');
-        } else {
-            $(e.target).find('#add_check').first().text('check_box');
-        }
-    }
-    if (layer.length > 0) {
-        count = 0
-        for (j = 0; j < layer.length; j++) {
-            if (typeof(layer[j]) != 'undefined') {
-                if (layer[j].getSource().i.LAYERS == p_id) {
-                    console.log('RM')
-                    layerRm(j);
-                    delete layer[j];
+            if (p_state == '' || typeof(p_state) == 'undefined') {
+                console.log('B')
+                p_state = $(e.target).text();
+                if (p_state == 'check_box') {
+                    $(e.target).text('check_box_outline_blank');
                 } else {
-                    console.log('AD')
-                    olAddWMSLayer(local_gs, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
+                    $(e.target).text('check_box');
                 }
+            }
+        } else {
+            if (p_state == 'check_box') {
+                $(e.target).find('#add_check').first().text('check_box_outline_blank');
             } else {
-                count = count + 1;
+                $(e.target).find('#add_check').first().text('check_box');
             }
         }
-        console.log(count);
-        if (count == layer.length) {
-            console.log('AD')
+        console.log(p_state, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
+        if (layer.length > 0) {
+            count = 0
+            for (j = 0; j < layer.length; j++) {
+                if (typeof(layer[j]) != 'undefined') {
+                    if (layer[j].getSource().i.LAYERS == p_id) {
+                        console.log('RM')
+                        layerRm(j);
+                        delete layer[j];
+                    } else {
+                        console.log('AD')
+                        olAddWMSLayer(local_gs, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
+                    }
+                } else {
+                    count = count + 1;
+                }
+            }
+            console.log(count);
+            if (count == layer.length) {
+                console.log('AD')
+                olAddWMSLayer(local_gs, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
+            }
+        } else {
             olAddWMSLayer(local_gs, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
         }
-    } else {
-        olAddWMSLayer(local_gs, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
-    }
+    }, 500);
 })
 
 $("#list_workspace").on('change', function() {
