@@ -459,7 +459,6 @@ $('#layers_item_list').on('click', function(e) {
             if (typeof(layer[j]) != 'undefined' && layer[j].getSource().i.LAYERS == p_id) {
                 console.log('RM')
                 layerRm(j);
-                delete layer[j];
                 breaked = true;
                 break;
             }
@@ -546,6 +545,7 @@ $("#sortableul").on('click', "li .collapsible-header i#remove", function(e) {
         //
     }
     layerRm(p_id);
+    delete layer[j];
     e.preventDefault();
 })
 
