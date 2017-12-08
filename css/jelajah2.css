@@ -400,3 +400,19 @@ input[type=range]+.thumb.active .value {
     width: 30px;
     height: 30px;
 }
+
+#inputcaribox {
+    background: white;
+    padding-right: 120px;
+    position: absolute;
+    right: 15px;
+    top: 0px;
+    border-radius: 10px;
+    opacity: 0.6;
+}
+
+#caribtn {
+    top: 28px;
+    right: 24px;
+    position: absolute;
+}
