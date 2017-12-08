@@ -104,7 +104,7 @@ function layerOpa(layerid, opacity) {
 
 // Init slider
 
-var slider_content = "<ul id='slide-out' class='side-nav'><li><h4> Layer</h4></li><li id='layers_item'></li></ul><a href='#' data-activates='slide-out' class='button-collapse' style='display:none';><i class='material-icons'>menu</i></a>";
+var slider_content = "<ul id='slide-out' class='side-nav'><li><h5> Layer</h5></li><a id='addlayer2' class='btn-floating btn-large waves-effect waves-light red'><i class='material-icons'>layers</i></a><li id='layers_item'></li></ul><a href='#' data-activates='slide-out' class='button-collapse' style='display:none';><i class='material-icons'>menu</i></a>";
 
 // Init geocoding UI
 var geocoding_content = "<div class='row'><div class='col s12'><div class='row'><div class='col s4 l5'></div><div class='input-field col s5 m6'><input placeholder='Cari lokasi' id='cari_geocoding' type='text' class='validate'></div><a id='caribtn' class='col s3 m2 l1 waves-effect waves-light btn'><i class='material-icons left'>search</i>Cari</a></div></div></div>"
@@ -195,6 +195,16 @@ $(document).ready(function() {
         alignment: 'center', // Displays dropdown with edge aligned to the left of button
         stopPropagation: false // Stops event propagation
     });
+
+    $('.ol-overlaycontainer-stopevent').append("<div id='zoomextent' class='ol-control'></div>")
+    $('#zoomextent').append("<button id='zoomextentbtn' type='button' title='Zoom To Extent'><i id='zoomextenbtni' class='material-icons'>aspect_ratio</i></button></div>");
+    $('#zoomextenbtni').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('ZE')
+        map.getView().fit(map_extent, map.getSize());
+    });
+
 });
 
 
@@ -221,40 +231,6 @@ $.get(palapa_api_url + "getWMSlayers", function(data) {
 });
 
 // Custom control
-window.app = {};
-var app = window.app;
-/**
- * @constructor
- * @extends {ol.control.Control}
- * @param {Object=} opt_options Control options.
- */
-app.JelajahBurgerControl = function(opt_options) {
-
-    var options = opt_options || {};
-
-    var button = document.createElement('button');
-    button.innerHTML = "<a href='#' data-activates='slide-out' class='button-collapse jelajah_burger'><i class='material-icons'>menu</i></a>";
-
-    var this_ = this;
-    var handleJelajahBurger = function() {
-        console.log('CLICK');
-        $('.button-collapse').sideNav('show');;
-    };
-
-    button.addEventListener('click', handleJelajahBurger, false);
-    button.addEventListener('touchstart', handleJelajahBurger, false);
-
-    var element = document.createElement('div');
-    element.className = 'jelajah_burger ol-unselectable ol-control';
-    element.appendChild(button);
-
-    ol.control.Control.call(this, {
-        element: element,
-        target: options.target
-    });
-
-};
-ol.inherits(app.JelajahBurgerControl, ol.control.Control);
 
 // Init map
 
@@ -312,11 +288,14 @@ var map = new ol.Map({
     view: new ol.View({
         projection: 'EPSG:4326',
         center: [116.5, -4],
+        extent: map_extent,
         zoom: 5,
         minZoom: 4,
         maxZoom: 22
     })
 });
+
+map.getView().fit(map_extent, map.getSize());
 
 map.on('singleclick', function(evt) {
     var coordinate = evt.coordinate;
@@ -603,7 +582,7 @@ $('#getwmslist').on('click', function() {
                 item_html = "<li id='" + wmslayerlist[i].Name + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + wmslayerlist[i].Name + "'>" + wmslayerlist[i].Title + "</span></li>";
                 $('#wms_item_list').append(item_html);
             }
-        }, 1000);
+        }, 1500);
     } else {
 
     }
@@ -699,4 +678,10 @@ $("#sortableul").on('mouseup', "li .collapsible-body .row .col #opacity", functi
 $("#sortableul").on('change', function(e) {
     p_id = $(e.target).closest('li').attr('id');
     console.log($(e.target).closest('li').attr('id'), $(e.target).closest('li').index())
+})
+
+$('#addlayer2').on('click', function(e) {
+    $('#modal_addlayer').modal('open');
+    e.preventDefault();
+    e.stopPropagation();
 })
