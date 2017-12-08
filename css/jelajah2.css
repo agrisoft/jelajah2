@@ -331,3 +331,33 @@ input[type=range]+.thumb.active .value {
     padding: 15px !important;
     padding-bottom: 5px !important;
 }
+
+.dropzone {
+    border: 2px dashed #0087F7;
+    border-radius: 5px;
+    background: white;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.dropzone.dz-clickable .dz-message,
+.dropzone.dz-clickable .dz-message * {
+    height: 15vh;
+    cursor: pointer;
+    text-align: center;
+    vertical-align: middle;
+    padding: 10%;
+    font-size: larger;
+    color: darkgray;
+}
+
+.dropzone .dz-message .note {
+    font-size: 0.8em;
+    font-weight: 200;
+    display: block;
+    margin-top: 1.4rem;
+}
+
+#getwmslist {
+    top: 15px;
+}
