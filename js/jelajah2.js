@@ -515,50 +515,90 @@ $("#cari_lokal_layer").on('input', function() {
     $('#layers_item_list').empty();
     for (k = 0; k < raw_local_wms.length; k++) {
         if (raw_local_wms[k].workspace == s_workspace) {
+            console.log(s_workspace, raw_local_wms[k].workspace, layer.length)
             if (raw_local_wms[k].layer_name.toLowerCase().indexOf(carilayer) >= 0) {
-                for (j = 0; j < layer.length; j++) {
-                    if (typeof(layer[j]) != 'undefined' && layer[j].getSource().i.LAYERS == raw_local_wms[k].layer_nativename) {
-                        item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
-                        $('#layers_item_list').append(item_html);
+                // for (j = 0; j < layer.length; j++) {
+                checked = [];
+                try {
+                    if (layer[j].getSource().i.LAYERS == raw_local_wms[k].layer_nativename) {
+                        checked[j] = true;
                     } else {
-                        item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
-                        $('#layers_item_list').append(item_html);
+                        // checked = false;
                     }
+                } catch (error) {
+                    // checked = false;
                 }
+                if (checked[j]) {
+                    item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                } else {
+                    item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                }
+                // $('#layers_item_list').append(item_html);
+                // }
                 $('#layers_item_list').append(item_html);
             } else if (carilayer == '') {
-                for (j = 0; j < layer.length; j++) {
-                    if (typeof(layer[j]) != 'undefined' && layer[j].getSource().i.LAYERS == raw_local_wms[k].layer_nativename) {
-                        item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
-                        $('#layers_item_list').append(item_html);
+                // for (j = 0; j < layer.length; j++) {
+                checked = [];
+                try {
+                    if (layer[j].getSource().i.LAYERS == raw_local_wms[k].layer_nativename) {
+                        checked[j] = true;
                     } else {
-                        item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
-                        $('#layers_item_list').append(item_html);
+                        // checked = false;
                     }
+                } catch (error) {
+                    // checked = false;
                 }
+                if (checked[j]) {
+                    item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                } else {
+                    item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                }
+                // $('#layers_item_list').append(item_html);
+                // }
+                $('#layers_item_list').append(item_html);
             }
         } else if (s_workspace == 'SEMUA') {
+            console.log(s_workspace, raw_local_wms[k].workspace, layer.length)
             if (raw_local_wms[k].layer_name.toLowerCase().indexOf(carilayer) >= 0) {
-                for (j = 0; j < layer.length; j++) {
-                    if (typeof(layer[j]) != 'undefined' && layer[j].getSource().i.LAYERS == raw_local_wms[k].layer_nativename) {
-                        item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
-                        $('#layers_item_list').append(item_html);
+                // for (j = 0; j < layer.length; j++) {
+                checked = [];
+                try {
+                    if (layer[j].getSource().i.LAYERS == raw_local_wms[k].layer_nativename) {
+                        checked[j] = true;
                     } else {
-                        item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
-                        $('#layers_item_list').append(item_html);
+                        // checked = false;
                     }
+                } catch (error) {
+                    // checked = false;
                 }
+                if (checked[j]) {
+                    item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                } else {
+                    item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                }
+                // $('#layers_item_list').append(item_html);
+                // }
                 $('#layers_item_list').append(item_html);
             } else if (carilayer == '') {
-                for (j = 0; j < layer.length; j++) {
-                    if (typeof(layer[j]) != 'undefined' && layer[j].getSource().i.LAYERS == raw_local_wms[k].layer_nativename) {
-                        item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
-                        $('#layers_item_list').append(item_html);
+                // for (j = 0; j < layer.length; j++) {
+                checked = [];
+                try {
+                    if (layer[j].getSource().i.LAYERS == raw_local_wms[k].layer_nativename) {
+                        checked[j] = true;
                     } else {
-                        item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
-                        $('#layers_item_list').append(item_html);
+                        // checked = false;
                     }
+                } catch (error) {
+                    // checked = false;
                 }
+                if (checked[j]) {
+                    item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                } else {
+                    item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                }
+                // $('#layers_item_list').append(item_html);
+                // }
+                $('#layers_item_list').append(item_html);
             }
         }
     }
