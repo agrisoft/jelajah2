@@ -9,6 +9,7 @@ var map_div = "jelajah_map";
 var layer = [];
 var raw_local_wms;
 var raw_out_wms;
+var ext_srv;
 var list_workspace;
 var hasil_cari;
 var container = document.getElementById('popup');
@@ -66,7 +67,7 @@ function olAddWMSLayer(serviceUrl, layername, layermark, min_x, min_y, max_x, ma
         info_layer.push(rndlayerid);
         extent = layer[rndlayerid].getExtent();
         map.getView().fit(extent, map.getSize());
-        legend_url = local_gs + '/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&legend_options=fontAntiAliasing:true&LAYER=' + layer_nativename;
+        legend_url = serviceUrl + '?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&legend_options=fontAntiAliasing:true&LAYER=' + layer_nativename;
         legend_html = "<img src='" + legend_url + "'>";
         $('#wmslegend_' + rndlayerid).append(legend_html);
         layer_index.push(rndlayerid);
@@ -112,7 +113,7 @@ var geocoding_content = "<div class='row'><div class='col s12'><div class='row'>
 // eksperimen
 var fab_button = "<div class='fixed-action-btn vertical'><a id='main_menu' class='btn-floating btn-large cyan darken-4 tooltipped' data-position='left' data-tooltip='Menu Utama'><i class='material-icons'>menu</i></a><ul><li><a class='btn-floating cyan lighten-1 modal-trigger tooltipped' href='#modal_addlayer' data-position='left' data-tooltip='Tambah Layer'><i class='material-icons'>playlist_add</i></a></li><li><a class='btn-floating cyan tooltipped button-collapse' data-position='left' data-tooltip='Layer' href='#' data-activates='slide-out'><i class='material-icons'>layers</i></a></li><li><a id='ukur_btn' class='btn-floating cyan darken-1 tooltipped' data-position='left' data-tooltip='Ukur'><i class='material-icons'>border_color</i></a></li><li><a class='btn-floating cyan darken-2 tooltipped' data-position='left' data-tooltip='Cetak'><i class='material-icons'>print</i></a></li><li><a class='btn-floating cyan darken-3 modal-trigger tooltipped' href='#modal_basemap' data-position='left'  data-tooltip='Basemap'><i class='material-icons'>public</i></a></li></ul></div>"
 
-var modal_addlayer = "<div id='modal_addlayer' class='modal bottom-sheet'><div class='modal-content'><h4>Tambah Layer</h4><ul id='tabs_addlayer' class='tabs'><li class='tab col s3'><a class='active' href='#add_dataset'>Dataset</a></li><li class='tab col s3'><a href='#add_url'>URL</a></li><li class='tab col s3'><a href='#add_file'>File</a></li><li class='tab col s3'><a href='#add_simpul'>Simpul</a></li></ul><div id='add_dataset' class='col s12'><div class='row'><div class='col s12'><div class='row'><div class='input-field col s4'><select id='list_workspace'><option value='SEMUA' disable selected>Semua Walidata</option></select></div><div class='input-field col s8'><input id='cari_lokal_layer' type='text' class='validate'><label for='cari_lokal_layer'>Cari Layer</label></div></div></div><div class='col s12'> <ul id='layers_item_list'  class='collection'></ul></div></div></div><div id='add_url' class='col s12'><div class='row'><div class='col s12'><div class='row'><div class='input-field col s2'><select id='srv_type'><option value='WMS' disable selected>OGC WMS</option><option value='ESRI'>ESRI REST</option></select></div><div class='input-field col s8'><input id='url_servis' type='text' class='validate'><label for='url_servis'>URL servis</label></div><div class='col s2'><a id='getwmslist' class='waves-effect waves-light btn'>Ambil List</a></div><div class='col s12'> <ul id='wms_item_list' class='collection'></ul></div></div></div></div></div><div id='add_file' class='col s12'><form action='/file-upload' class='dropzone'><div class='fallback'><input name='file' type='file' multiple /></div></form></div><div id='add_simpul' class='col s12 yellow'>Test 3</div></div></div>"
+var modal_addlayer = "<div id='modal_addlayer' class='modal bottom-sheet'><div class='modal-content'><h4>Tambah Layer</h4><ul id='tabs_addlayer' class='tabs'><li class='tab col s3'><a class='active' href='#add_dataset'>Dataset</a></li><li class='tab col s3'><a href='#add_url'>URL</a></li><li class='tab col s3'><a href='#add_file'>File</a></li><li class='tab col s3'><a href='#add_simpul'>Simpul</a></li></ul><div id='add_dataset' class='col s12'><div class='row'><div class='col s12'><div class='row'><div class='input-field col s4'><select id='list_workspace'><option value='SEMUA' disable selected>Semua Walidata</option></select></div><div class='input-field col s8'><input id='cari_lokal_layer' type='text' class='validate'><label for='cari_lokal_layer'>Cari Layer</label></div></div></div><div class='col s12'> <ul id='layers_item_list'  class='collection'></ul></div></div></div><div id='add_url' class='col s12'><div class='row'><div class='col s12'><div class='row'><div class='input-field col s2'><select id='srv_type'><option value='WMS' disable selected>OGC WMS</option><option value='ESRI'>ESRI REST</option></select></div><div class='input-field col s8'><input id='url_servis' type='text' class='validate'><label for='url_servis'>URL servis</label></div><div class='col s2'><a id='getwmslist' class='waves-effect waves-light btn'>Ambil List</a></div><div class='col s12'> <ul id='wms_item_list' class='collection'></ul></div></div></div></div></div><div id='add_file' class='col s12'><form action='/file-upload' class='dropzone'><div class='fallback'><input name='file' type='file' multiple /></div></form></div><div id='add_simpul' class='col s12'><div class='row'><div class='col s12'><div class='row'><div class='input-field col s4'><select id='ext_srv_type'><option value='WMS' disable selected>Pilih Servis</option></select></div><div id='url_ext_srv' class='input-field col s6'></div><div class='col s2' id='ext_srv_t'></div><div class='col s12'> <ul id='ext_wms_item_list' class='collection'></ul></div></div></div></div></div></div></div>"
 
 var modal_cari = "<div id='modal_cari' class='modal bottom-sheet'><div class='modal-content'><h4>Hasil pencarian</h4><ul id='list_hasil'></ul></div></div>"
 
@@ -230,6 +231,16 @@ $.get(palapa_api_url + "getWMSlayers", function(data) {
     $('.modal').modal();
 });
 
+$.get(palapa_api_url + "extsrv/list", function(data) {
+    window.ext_srv = JSON.parse(data);
+    tipe = 'WMS';
+    for (i = 0; i < ext_srv.length; i++) {
+        if (ext_srv[i].type == 'OGC WMS') { tipe = 'WMS' } else { tipe = 'ESRI' };
+        item_html = "<option value='" + ext_srv[i].url + "'>" + ext_srv[i].name + "</option>";
+        $('#ext_srv_type').append(item_html);
+    }
+})
+
 // Custom control
 
 // Init map
@@ -281,6 +292,8 @@ closer.onclick = function() {
     return false;
 };
 
+scline = new ol.control.ScaleLine();
+
 var map = new ol.Map({
     layers: [layer_osm, layer_rbi, layer_esri, layer_rbibaru],
     target: map_div,
@@ -292,7 +305,8 @@ var map = new ol.Map({
         zoom: 5,
         minZoom: 4,
         maxZoom: 22
-    })
+    }),
+    controls: ol.control.defaults().extend([scline])
 });
 
 map.getView().fit(map_extent, map.getSize());
@@ -633,6 +647,77 @@ $('#wms_item_list').on('click', function(e) {
     srv_type = $('#srv_type').val();
     srv_url = $('#url_servis').val();
     if (srv_type == 'WMS') {
+        if (p_id == '' || typeof(p_id) == 'undefined' || p_id == 'add_check') {
+            p_id = $(e.target).closest('li').attr('id');
+        }
+        var min_x, min_y, max_x, max_y, layer_nativename;
+        for (i = 0; i < raw_out_wms.length; i++) {
+            // console.log(raw_local_wms[i].layer_nativename)
+            if (raw_out_wms[i].Name.indexOf(p_id) >= 0) {
+                min_x = raw_out_wms[i].EX_GeographicBoundingBox[0];
+                min_y = raw_out_wms[i].EX_GeographicBoundingBox[1];
+                max_x = raw_out_wms[i].EX_GeographicBoundingBox[2];
+                max_y = raw_out_wms[i].EX_GeographicBoundingBox[3];
+                layer_nativename = raw_out_wms[i].Name;
+            }
+        }
+        p_name = $(e.target).find('.layermark').first().text();
+        if (p_name == '' || typeof(p_name) == 'undefined') {
+            p_name = $(e.target).closest('.layermark').first().text();
+            if (p_name == '' || typeof(p_name) == 'undefined') {
+                p_name = $(e.target).siblings('.layermark').first().text();
+            }
+        }
+        p_state = $(e.target).find('#add_check').first().text();
+        if (p_state == '' || typeof(p_state) == 'undefined') {
+            p_state = $(e.target).siblings('#add_check').first().text();
+            if (p_state == '' || typeof(p_state) == 'undefined') {
+                p_state = $(e.target).text();
+            }
+        }
+        console.log(p_state, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
+        olAddWMSLayer(srv_url, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
+    } else {
+
+    }
+})
+
+$("#ext_srv_type").on('change', function() {
+    tipe = 'WMS';
+    $("#url_ext_srv").text($("#ext_srv_type").val())
+    for (i = 0; i < ext_srv.length; i++) {
+        if (ext_srv[i].url == $("#ext_srv_type").val()) {
+            if (ext_srv[i].type == 'OGC WMS') { tipe = 'WMS' } else { tipe = 'ESRI' };
+            $("#ext_srv_t").text(ext_srv[i].type);
+            if (tipe == 'WMS') {
+                wmscapurl = ext_srv[i].url + '?service=wms&request=GetCapabilities';
+                wmscapobj = $.get(_proxy + encodeURIComponent(wmscapurl));
+                // wmscap = new WMSCapabilities().parse(wmscapobj.responseText);
+                setTimeout(() => {
+                    wmscap = new WMSCapabilities().parse(wmscapobj.responseText);
+                    console.log(wmscap)
+                    wmslayerlist = wmscap.Capability.Layer.Layer;
+                    window.raw_out_wms = wmslayerlist;
+                    console.log(wmslayerlist)
+                    $('#wms_item_list').empty();
+                    for (i = 0; i < wmslayerlist.length; i++) {
+                        item_html = "<li id='" + wmslayerlist[i].Name + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + wmslayerlist[i].Name + "'>" + wmslayerlist[i].Title + "</span></li>";
+                        $('#ext_wms_item_list').append(item_html);
+                    }
+                }, 1500);
+            } else {
+
+            }
+        }
+    }
+})
+
+$('#ext_wms_item_list').on('click', function(e) {
+    p_id = $(e.target).attr('id');
+    srv_type = $('#ext_srv_t').text();
+    srv_url = $('#url_ext_srv').text();
+    if (srv_type == 'OGC WMS') { tipe = 'WMS' } else { tipe = 'ESRI' };
+    if (tipe == 'WMS') {
         if (p_id == '' || typeof(p_id) == 'undefined' || p_id == 'add_check') {
             p_id = $(e.target).closest('li').attr('id');
         }

@@ -416,3 +416,17 @@ input[type=range]+.thumb.active .value {
     right: 24px;
     position: absolute;
 }
+
+#url_ext_srv {
+    /* top: 0; */
+    /* bottom: 0; */
+    position: relative;
+    padding-top: 15px;
+    padding-left: 15px;
+}
+
+#ext_srv_t {
+    position: relative;
+    padding-top: 30px;
+    padding-left: 15px;
+}
