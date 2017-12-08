@@ -315,3 +315,19 @@ input[type=range]+.thumb.active .value {
 .ol-attribution ul {
     display: none;
 }
+
+.modal-content.basemap {
+    max-height: 16vh;
+    min-height: 15vh;
+    padding-top: 20px;
+    padding-left: 5px;
+}
+
+.card-title.basemap {
+    font-weight: 500;
+    text-shadow: 0px 0px 10px rgba(0, 0, 0, 1);
+    /* bottom: 0px; */
+    /* position: relative; */
+    padding: 15px !important;
+    padding-bottom: 5px !important;
+}

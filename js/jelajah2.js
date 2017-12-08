@@ -115,7 +115,7 @@ var modal_addlayer = "<div id='modal_addlayer' class='modal bottom-sheet'><div c
 
 var modal_cari = "<div id='modal_cari' class='modal bottom-sheet'><div class='modal-content'><h4>Hasil pencarian</h4><ul id='list_hasil'></ul></div></div>"
 
-var modal_basemap = "<div id='modal_basemap' class='modal bottom-sheet'><div class='modal-content'><h4>Basemap</h4><div class='row'><div id='base_osm' class='col s6 m3 l2'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title'>OSM</span></div><div class='card-content'><p>Openstreetmap</p></div></div></div><div class='col s6 m3 l2' id='base_rbi'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title'>RBI</span></div><div class='card-content'><p>Rupa Bumi Indonesia</p></div></div></div><div id='base_esri' class='col s6 m3 l2'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title'>ESRI</span></div><div class='card-content'><p>ERSI Imagery</p></div></div></div><div id='base_rbibaru' class='col s6 m3 l2'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title'>RBI OS</span></div><div class='card-content'><p>Rupa Bumi Indonesia (OS)</p></div></div></div></div></div</div>"
+var modal_basemap = "<div id='modal_basemap' class='modal bottom-sheet'><div class='modal-content basemap'><div class='row'><div id='base_osm' class='col s6 m4 l2'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>OSM</span></div></div></div><div class='col s6 m4 l2' id='base_rbi'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>RBI</span></div></div></div><div id='base_esri' class='col s6 m4 l2'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>ESRI</span></div></div></div><div id='base_rbibaru' class='col s6 m4 l2'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>RBI OS</span></div></div></div></div></div</div>"
 
 var ukur_drop = "<ul id='ukur' class='dropdown-content'><li><a href='#!'>one</a></li><li><a href='#!'>two</a></li><li class='divider'></li><li><a href='#!'>three</a></li><li><a href='#!'><i class='material-icons'>view_module</i>four</a></li><li><a href='#!'><i class='material-icons'>cloud</i>five</a></li></ul>"
 
@@ -397,8 +397,10 @@ $('#list_hasil').on('click', function(e) {
             map.addLayer(layer[rndlayerid]);
             extent = layer[rndlayerid].getSource().getExtent();
             map.getView().fit(extent, map.getSize());
-            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + hasil_cari[i].display_name + "</div><i class='material-icons right'>comment</i><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div><span>Lorem ipsum dolor sit amet.</span></div></li>"
+            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><i id='getinfo' class='material-icons right'>comment</i><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
             $('#sortableul').append(listappend);
+            // listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + hasil_cari[i].display_name + "</div><i class='material-icons right'>comment</i><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div><span>Lorem ipsum dolor sit amet.</span></div></li>"
+            // $('#sortableul').append(listappend);
             layer_index.push(rndlayerid);
         }
     }
@@ -476,13 +478,24 @@ $('#layers_item_list').on('click', function(e) {
 $("#list_workspace").on('change', function() {
     s_workspace = $("#list_workspace").val();
     $('#layers_item_list').empty();
-    for (i = 0; i < raw_local_wms.length; i++) {
-        if (raw_local_wms[i].workspace == s_workspace) {
-            item_html = "<li id='" + raw_local_wms[i].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + raw_local_wms[i].layer_nativename + "'>" + raw_local_wms[i].workspace + " " + raw_local_wms[i].layer_name + "</span></li>";
+    for (k = 0; k < raw_local_wms.length; k++) {
+        if (raw_local_wms[k].workspace == s_workspace) {
+            for (j = 0; j < layer.length; j++) {
+                if (typeof(layer[j]) != 'undefined' && layer[j].getSource().i.LAYERS == raw_local_wms[k].layer_nativename) {
+                    item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                } else {
+                    item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                }
+            }
             $('#layers_item_list').append(item_html);
         } else if (s_workspace == 'SEMUA') {
-            item_html = "<li id='" + raw_local_wms[i].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + raw_local_wms[i].layer_nativename + "'>" + raw_local_wms[i].workspace + " " + raw_local_wms[i].layer_name + "</span></li>";
-            $('#layers_item_list').append(item_html)
+            for (j = 0; j < layer.length; j++) {
+                if (typeof(layer[j]) != 'undefined' && layer[j].getSource().i.LAYERS == raw_local_wms[k].layer_nativename) {
+                    item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                } else {
+                    item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                }
+            }
             $('#layers_item_list').append(item_html);
         }
     }
@@ -492,21 +505,45 @@ $("#cari_lokal_layer").on('input', function() {
     s_workspace = $("#list_workspace").val();
     carilayer = $("#cari_lokal_layer").val()
     $('#layers_item_list').empty();
-    for (i = 0; i < raw_local_wms.length; i++) {
-        if (raw_local_wms[i].workspace == s_workspace) {
-            if (raw_local_wms[i].layer_name.toLowerCase().indexOf(carilayer) >= 0) {
-                item_html = "<li id='" + raw_local_wms[i].layer_nativename + "' class='collection-item'><input type='checkbox' id='" + raw_local_wms[i].layer_nativename + "'> <label id='" + raw_local_wms[i].layer_nativename + "' for='" + raw_local_wms[i].layer_nativename + "'><strong>" + raw_local_wms[i].workspace + "</strong> " + raw_local_wms[i].layer_name + "</li>";
+    for (k = 0; k < raw_local_wms.length; k++) {
+        if (raw_local_wms[k].workspace == s_workspace) {
+            if (raw_local_wms[k].layer_name.toLowerCase().indexOf(carilayer) >= 0) {
+                for (j = 0; j < layer.length; j++) {
+                    if (typeof(layer[j]) != 'undefined' && layer[j].getSource().i.LAYERS == raw_local_wms[k].layer_nativename) {
+                        item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                    } else {
+                        item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                    }
+                }
                 $('#layers_item_list').append(item_html);
             } else if (carilayer == '') {
-                item_html = "<li id='" + raw_local_wms[i].layer_nativename + "' class='collection-item'><input type='checkbox' id='" + raw_local_wms[i].layer_nativename + "'> <label id='" + raw_local_wms[i].layer_nativename + "' for='" + raw_local_wms[i].layer_nativename + "'><strong>" + raw_local_wms[i].workspace + "</strong> " + raw_local_wms[i].layer_name + "</li>";
+                for (j = 0; j < layer.length; j++) {
+                    if (typeof(layer[j]) != 'undefined' && layer[j].getSource().i.LAYERS == raw_local_wms[k].layer_nativename) {
+                        item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                    } else {
+                        item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                    }
+                }
                 $('#layers_item_list').append(item_html);
             }
         } else if (s_workspace == 'SEMUA') {
-            if (raw_local_wms[i].layer_name.toLowerCase().indexOf(carilayer) >= 0) {
-                item_html = "<li id='" + raw_local_wms[i].layer_nativename + "' class='collection-item'><input type='checkbox' id='" + raw_local_wms[i].layer_nativename + "'> <label id='" + raw_local_wms[i].layer_nativename + "' for='" + raw_local_wms[i].layer_nativename + "'><strong>" + raw_local_wms[i].workspace + "</strong> " + raw_local_wms[i].layer_name + "</li>";
+            if (raw_local_wms[k].layer_name.toLowerCase().indexOf(carilayer) >= 0) {
+                for (j = 0; j < layer.length; j++) {
+                    if (typeof(layer[j]) != 'undefined' && layer[j].getSource().i.LAYERS == raw_local_wms[k].layer_nativename) {
+                        item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                    } else {
+                        item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                    }
+                }
                 $('#layers_item_list').append(item_html);
             } else if (carilayer == '') {
-                item_html = "<li id='" + raw_local_wms[i].layer_nativename + "' class='collection-item'><input type='checkbox' id='" + raw_local_wms[i].layer_nativename + "'> <label id='" + raw_local_wms[i].layer_nativename + "' for='" + raw_local_wms[i].layer_nativename + "'><strong>" + raw_local_wms[i].workspace + "</strong> " + raw_local_wms[i].layer_name + "</li>";
+                for (j = 0; j < layer.length; j++) {
+                    if (typeof(layer[j]) != 'undefined' && layer[j].getSource().i.LAYERS == raw_local_wms[k].layer_nativename) {
+                        item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                    } else {
+                        item_html = "<li id='" + raw_local_wms[k].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + raw_local_wms[k].layer_nativename + "'>" + raw_local_wms[k].workspace + " " + raw_local_wms[k].layer_name + "</span></li>";
+                    }
+                }
                 $('#layers_item_list').append(item_html);
             }
         }
