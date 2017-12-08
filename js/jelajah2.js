@@ -545,7 +545,7 @@ $("#sortableul").on('click', "li .collapsible-header i#remove", function(e) {
         //
     }
     layerRm(p_id);
-    delete layer[j];
+    delete layer[p_id];
     e.preventDefault();
 })
 
