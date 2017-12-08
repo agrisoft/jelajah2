@@ -293,3 +293,25 @@ input[type=range]+.thumb.active .value {
     top: 5px;
     padding-right: 15px;
 }
+
+.ol-control button {
+    display: block;
+    margin: 1px;
+    padding: 0;
+    color: #fff;
+    font-size: 1.14em;
+    font-weight: 700;
+    text-decoration: none;
+    text-align: center;
+    height: 1.75em;
+    width: 1.75em;
+    line-height: .4em;
+    background-color: rgb(0, 96, 100);
+    border: none;
+    border-radius: 2px;
+}
+
+.ol-attribution button,
+.ol-attribution ul {
+    display: none;
+}

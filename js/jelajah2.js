@@ -15,11 +15,12 @@ var content = document.getElementById('popup-content');
 var closer = document.getElementById('popup-closer');
 var info_layer = [];
 var layer_source = [];
-var layer_index = []
+var layer_index = [];
+var layer_count = 0;
 
 // Functions
 function randomNumber() {
-    return Math.floor((Math.random() * 1000) + 1);
+    return Math.floor((Math.random() * 10000) + 1);
 }
 
 function getParameterByName(name, url) {
@@ -42,6 +43,8 @@ function uniqueArray(arr) {
 
 function olAddWMSLayer(serviceUrl, layername, layermark, min_x, min_y, max_x, max_y, layer_nativename) {
     rndlayerid = randomNumber()
+        // window.layer_count = layer_count + 1;
+        // rndlayerid = layer_count;
     layer_source[rndlayerid] = new ol.source.TileWMS({
         url: serviceUrl,
         params: { LAYERS: layername, TILED: true }
@@ -317,10 +320,11 @@ var map = new ol.Map({
 map.on('singleclick', function(evt) {
     var coordinate = evt.coordinate;
     var hdms = ol.coordinate.toStringHDMS(coordinate);
+    console.log()
 
-
-
-    content.innerHTML = '<p>You clicked here:</p><code>' + hdms + '</code>';
+    $('#popup-content').empty();
+    var content_html = '<p>You clicked here:</p><code>' + hdms + '</code>';
+    $('#popup-content').append(content_html)
     overlay.setPosition(coordinate);
 });
 
@@ -416,65 +420,57 @@ $('#layers_item_list').on('click', function(e) {
             layer_nativename = raw_local_wms[i].layer_nativename;
         }
     }
-    setTimeout(() => {
-        p_name = $(e.target).find('.layermark').first().text();
+    p_name = $(e.target).find('.layermark').first().text();
+    if (p_name == '' || typeof(p_name) == 'undefined') {
+        p_name = $(e.target).closest('.layermark').first().text();
         if (p_name == '' || typeof(p_name) == 'undefined') {
-            p_name = $(e.target).closest('.layermark').first().text();
-            if (p_name == '' || typeof(p_name) == 'undefined') {
-                p_name = $(e.target).siblings('.layermark').first().text();
-            }
+            p_name = $(e.target).siblings('.layermark').first().text();
         }
-        p_state = $(e.target).find('#add_check').first().text();
+    }
+    p_state = $(e.target).find('#add_check').first().text();
+    if (p_state == '' || typeof(p_state) == 'undefined') {
+        p_state = $(e.target).siblings('#add_check').first().text();
+        console.log(p_state, 'A')
+        if (p_state == 'check_box') {
+            $(e.target).siblings('#add_check').first().text('check_box_outline_blank');
+        } else {
+            $(e.target).siblings('#add_check').first().text('check_box');
+        }
         if (p_state == '' || typeof(p_state) == 'undefined') {
-            p_state = $(e.target).siblings('#add_check').first().text();
-            console.log(p_state, 'A')
+            console.log('B')
+            p_state = $(e.target).text();
             if (p_state == 'check_box') {
-                $(e.target).siblings('#add_check').first().text('check_box_outline_blank');
+                $(e.target).text('check_box_outline_blank');
             } else {
-                $(e.target).siblings('#add_check').first().text('check_box');
-            }
-            if (p_state == '' || typeof(p_state) == 'undefined') {
-                console.log('B')
-                p_state = $(e.target).text();
-                if (p_state == 'check_box') {
-                    $(e.target).text('check_box_outline_blank');
-                } else {
-                    $(e.target).text('check_box');
-                }
-            }
-        } else {
-            if (p_state == 'check_box') {
-                $(e.target).find('#add_check').first().text('check_box_outline_blank');
-            } else {
-                $(e.target).find('#add_check').first().text('check_box');
+                $(e.target).text('check_box');
             }
         }
-        console.log(p_state, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
-        if (layer.length > 0) {
-            count = 0
-            for (j = 0; j < layer.length; j++) {
-                if (typeof(layer[j]) != 'undefined') {
-                    if (layer[j].getSource().i.LAYERS == p_id) {
-                        console.log('RM')
-                        layerRm(j);
-                        delete layer[j];
-                    } else {
-                        console.log('AD')
-                        olAddWMSLayer(local_gs, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
-                    }
-                } else {
-                    count = count + 1;
-                }
-            }
-            console.log(count);
-            if (count == layer.length) {
-                console.log('AD')
-                olAddWMSLayer(local_gs, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
-            }
+    } else {
+        if (p_state == 'check_box') {
+            $(e.target).find('#add_check').first().text('check_box_outline_blank');
         } else {
+            $(e.target).find('#add_check').first().text('check_box');
+        }
+    }
+    console.log(p_state, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
+    if (layer.length > 0) {
+        breaked = false;
+        for (j = 0; j < layer.length; j++) {
+            if (typeof(layer[j]) != 'undefined' && layer[j].getSource().i.LAYERS == p_id) {
+                console.log('RM')
+                layerRm(j);
+                delete layer[j];
+                breaked = true;
+                break;
+            }
+        }
+        if (!breaked) {
+            console.log('AD')
             olAddWMSLayer(local_gs, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
         }
-    }, 500);
+    } else {
+        olAddWMSLayer(local_gs, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
+    }
 })
 
 $("#list_workspace").on('change', function() {
@@ -542,6 +538,13 @@ $("#sortableul").on('click', "li .collapsible-header i#remove", function(e) {
     e.stopPropagation();
     p_id = $(e.target).closest('li').attr('id');
     p_state = $(e.target).text();
+    try {
+        p_native = ("#" + layer[p_id].getSource().i.LAYERS).replace(":", "\\\\:");
+        console.log(p_native)
+        $('[id="' + layer[p_id].getSource().i.LAYERS + '"]').find('i').text('check_box_outline_blank');
+    } catch (error) {
+        //
+    }
     layerRm(p_id);
     e.preventDefault();
 })
