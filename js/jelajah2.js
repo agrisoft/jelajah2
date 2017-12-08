@@ -459,6 +459,7 @@ $('#layers_item_list').on('click', function(e) {
             if (typeof(layer[j]) != 'undefined' && layer[j].getSource().i.LAYERS == p_id) {
                 console.log('RM')
                 layerRm(j);
+                delete layer[j];
                 breaked = true;
                 break;
             }
