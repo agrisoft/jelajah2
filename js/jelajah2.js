@@ -19,6 +19,17 @@ var info_layer = [];
 var layer_source = [];
 var layer_index = [];
 var layer_count = 0;
+var layeritem = 0;
+var draw;
+var sketch;
+var sketchElement;
+var helpTooltipElement;
+var helpTooltip;
+var measureTooltipElement;
+var measureTooltip;
+var continuePolygonMsg = 'Klik untuk mulai menggambar area';
+var continueLineMsg = 'Klik untuk mulai menggambar garis';
+var listener;
 
 // Functions
 function randomNumber() {
@@ -43,20 +54,25 @@ function uniqueArray(arr) {
     return a;
 }
 
+
+function extToMerc(extent) {
+    return ol.proj.transformExtent(extent, ol.proj.get('EPSG:4326'), ol.proj.get('EPSG:3857'))
+}
+
 function olAddWMSLayer(serviceUrl, layername, layermark, min_x, min_y, max_x, max_y, layer_nativename) {
     // rndlayerid = randomNumber()
     window.layer_count = layer_count + 1;
     rndlayerid = layer_count;
     layer_source[rndlayerid] = new ol.source.TileWMS({
         url: serviceUrl,
-        params: { LAYERS: layername, TILED: true }
+        params: { LAYERS: layername, TILED: true, SRS: 'EPSG:3857' }
     })
     layer[rndlayerid] = new ol.layer.Tile({
         title: layermark,
         tipe: 'WMS',
         visible: true,
         preload: Infinity,
-        extent: [min_x, min_y, max_x, max_y],
+        extent: extToMerc([min_x, min_y, max_x, max_y]),
         source: layer_source[rndlayerid]
     });
     map.addLayer(layer[rndlayerid]);
@@ -71,6 +87,43 @@ function olAddWMSLayer(serviceUrl, layername, layermark, min_x, min_y, max_x, ma
         legend_html = "<img src='" + legend_url + "'>";
         $('#wmslegend_' + rndlayerid).append(legend_html);
         layer_index.push(rndlayerid);
+        layer[rndlayerid].setZIndex(layer.length);
+    }, 1000);
+}
+
+function olAddRESTLayer(serviceUrl, id) {
+    projection = ol.proj.get('EPSG:4326');
+    console.log(serviceUrl, id)
+    window.layer_count = layer_count + 1;
+    rndlayerid = layer_count;
+    // layer_source[rndlayerid] = new ol.source.XYZ({
+    //     projection: projection,
+    //     url: serviceUrl + '/' + id + '/tile/{z}/{y}/{x}'
+    // })
+    layer_source[rndlayerid] = new ol.source.TileArcGISRest({
+        // projection: projection,
+        url: serviceUrl
+    })
+    layer[rndlayerid] = new ol.layer.Tile({
+        title: id,
+        tipe: 'REST',
+        visible: true,
+        preload: Infinity,
+        // extent: extToMerc([min_x, min_y, max_x, max_y]),
+        source: layer_source[rndlayerid]
+    });
+    map.addLayer(layer[rndlayerid]);
+    setTimeout(() => {
+        listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><i id='getinfo' class='material-icons right'>comment</i><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+        $('#sortableul').append(listappend);
+        info_layer.push(rndlayerid);
+        extent = layer[rndlayerid].getExtent();
+        map.getView().fit(extent, map.getSize());
+        legend_url = serviceUrl + '?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&legend_options=fontAntiAliasing:true&LAYER=' + layer_nativename;
+        legend_html = "<img src='" + legend_url + "'>";
+        $('#wmslegend_' + rndlayerid).append(legend_html);
+        layer_index.push(rndlayerid);
+        layer[rndlayerid].setZIndex(layer.length);
     }, 1000);
 }
 
@@ -103,6 +156,379 @@ function layerOpa(layerid, opacity) {
     layer[layerid].setOpacity(opafrac);
 };
 
+function handleFileSelect(evt) {
+    console.log(evt)
+        // var files = evt.target.files; // FileList object
+    console.log('A');
+    f = evt;
+    // for (var i = 0, f; f = files[i]; i++) {
+    console.log(escape(f.name), f.type, f.size);
+    // if (uploadedfile == f.name) {
+    //     console.log("Sudah diupload!");
+    // } else {
+    rndlayerid = String(randomNumber());
+    is_zip = /(\.zip|\.ZIP)$/i;
+    is_gpx = /(\.gpx|\.GPX)$/i;
+    is_csv = /(\.csv|\.CSV)$/i;
+    if (is_zip.exec(f.name)) {
+        console.log('ZIP');
+        loadShpZip(f, rndlayerid);
+        // $("#layerlistid ul").append('<li class="ui-state-default" id="' + rndlayerid + '"><strong>SHP :</strong> ' + f.name + ' <input type="checkbox" checked="true" id="c_' + rndlayerid + '" onchange="layerVis(' + rndlayerid + ')"><span class="fa fa-times" aria-hidden="true"  id="r_' + rndlayerid + '" onClick="layerRm(' + rndlayerid + ')"></span><span class="fa fa-map-o" aria-hidden="true"  id="z_' + rndlayerid + '" onClick="layerZm(' + rndlayerid + ')"></span></li>');
+        // uploadedfile = document.getElementById('files').value;
+    } else if (is_gpx.exec(f.name)) {
+        console.log('GPX');
+        loadGpx(f, rndlayerid);
+        // $("#layerlistid ul").append('<li class="ui-state-default" id="' + rndlayerid + '"><strong>GPX :</strong> ' + f.name + ' <input type="checkbox" checked="true" id="c_' + rndlayerid + '" onchange="layerVis(' + rndlayerid + ')"><span class="fa fa-times" aria-hidden="true"  id="r_' + rndlayerid + '" onClick="layerRm(' + rndlayerid + ')"></span><span class="fa fa-map-o" aria-hidden="true"  id="z_' + rndlayerid + '" onClick="layerZm(' + rndlayerid + ')"></span></li>');
+    } else if (is_csv.exec(f.name)) {
+        // $("#csv_dialog").dialog("open");
+        event.preventDefault();
+        loadCSV(f, rndlayerid);
+        // $("#layerlistid ul").append('<li class="ui-state-default" id="' + rndlayerid + '"><strong>CSV :</strong> ' + f.name + ' <input type="checkbox" checked="true" id="c_' + rndlayerid + '" onchange="layerVis(' + rndlayerid + ')"><span class="fa fa-times" aria-hidden="true"  id="r_' + rndlayerid + '" onClick="layerRm(' + rndlayerid + ')"></span><span class="fa fa-map-o" aria-hidden="true"  id="z_' + rndlayerid + '" onClick="layerZm(' + rndlayerid + ')"></span></li>');
+        console.log('CSV');
+    } else {
+        alert('Type berkas tidak didukung!');
+    }
+    // }
+    // }
+    console.log("BLOCKER: ", rndlayerid);
+    console.log(layer);
+    $('#files').val('');
+    // console.log(layer[rndlayerid]);
+}
+
+
+var vector_style = new ol.style.Style({
+    fill: new ol.style.Fill({
+        color: 'rgba(170, 34, 34, 0.3)'
+    }),
+    stroke: new ol.style.Stroke({
+        color: '#F22',
+        width: 1
+    }),
+    text: new ol.style.Text({
+        font: '12px Calibri,sans-serif',
+        fill: new ol.style.Fill({
+            color: '#000'
+        }),
+        stroke: new ol.style.Stroke({
+            color: '#fff',
+            width: 3
+        })
+    }),
+    image: new ol.style.Circle({
+        radius: 5,
+        fill: new ol.style.Fill({ color: 'rgba(170, 34, 34, 0.3)' }),
+        stroke: new ol.style.Stroke({ color: '#F22', width: 1 })
+    })
+});
+
+function loadShpZip(files, rndid) {
+    // var epsg = ($('#epsg').val() == '') ? 4326 : $('#epsg').val(),
+    // encoding = ($('#encoding').val() == '') ? 'UTF-8' : $('#encoding').val();
+    // console.log(files.name);
+    //   if(files.name.split('.')[1] == 'zip') {
+    // if(file) $('.dimmer').addClass('active');
+    window.layer_count = layer_count + 1;
+    rndlayerid = layer_count;
+    loadshp({
+        url: files,
+        encoding: 'UTF-8',
+        EPSG: 4326
+    }, function(data) {
+        URL = window.URL || window.webkitURL || window.mozURL || window.msURL,
+            url = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: "application/json" }));
+
+        feature = new ol.format.GeoJSON().readFeatures(data, {
+            featureProjection: 'EPSG:3857'
+        });
+
+        // layeritem = layeritem + 1;
+        layeritem = rndlayerid;
+        layer[layeritem] = new ol.layer.Vector({
+            title: String(files.name),
+            source: new ol.source.Vector({
+                features: feature,
+                style: vector_style,
+                params: {
+                    'LAYERS': 'Shapefile: ' + String(files.name)
+                }
+            })
+        });
+        setTimeout(function() {
+            console.log(layeritem);
+            map.addLayer(layer[layeritem]);
+            extent = layer[layeritem].getSource().getExtent();
+            map.getView().fit(extent, map.getSize());
+            layer_index.push(rndlayerid);
+            layer[rndlayerid].setZIndex(layer.length);
+            layer[rndlayerid].setStyle(vector_style)
+        }, 2000);
+        //   delete layer;
+    });
+    console.log('C');
+    console.log(layer);
+    // map.addControl(layerSwitcher);
+    console.log('B');
+
+    //   } else {
+    // $('.modal').modal('show');
+    //   }
+}
+
+function loadGpx(files, rndid) {
+    window.layer_count = layer_count + 1;
+    rndlayerid = layer_count;
+    layeritem = rndlayerid;
+    gpxformat = new ol.format.GPX();
+    gpxreader = new FileReader();
+    gpxreader.readAsText(files, "UTF-8");
+    gpxreader.onload = function(e) {
+        gpxreaderresult = gpxreader.result;
+        gpxfeatures = gpxformat.readFeatures(gpxreaderresult, {
+            dataProjection: 'EPSG:4326',
+            featureProjection: 'EPSG:3857'
+        }); // console.log(gpxreaderresult);    
+        layer[rndlayerid] = new ol.layer.Vector({
+            source: new ol.source.Vector({
+                features: gpxfeatures,
+                params: {
+                    'LAYERS': 'GPX: ' + String(files.name)
+                }
+
+            })
+        });
+        setTimeout(function() {
+            console.log(rndlayerid);
+            map.addLayer(layer[rndlayerid]);
+            extent = layer[rndlayerid].getSource().getExtent();
+            map.getView().fit(extent, map.getSize());
+            layer_index.push(rndlayerid);
+            layer[rndlayerid].setZIndex(layer.length);
+            layer[rndlayerid].setStyle(vector_style)
+        }, 2000);
+    };
+
+}
+
+function loadCSV(files, rndid) {
+    window.layer_count = layer_count + 1;
+    rndlayerid = layer_count;
+    layeritem = rndlayerid;
+    csvreader = new FileReader();
+    csvreader.readAsText(files, "UTF-8");
+    csvreader.onload = function(e) {
+        csvreaderresult = csvreader.result;
+        console.log(csvreaderresult);
+        lines = csvreaderresult.split("\r");
+        console.log(lines);
+        for (var count = 0; count < lines.length; count++) {
+            rowContent = lines[count].split(",");
+            for (var i = 0; i < rowContent.length; i++) {
+                if (count == 0) {
+                    console.log(rowContent[i])
+                    $('#csv_select_x').append($("<option></option>").attr("value", rowContent[i]).text(rowContent[i]));
+                    $('#csv_select_y').append($("<option></option>").attr("value", rowContent[i]).text(rowContent[i]));
+                } else {
+                    // console.log(rowContent[i])
+                }
+            } //end rowContent for loop
+        }
+        csvasgeojson = csv2geojson.csv2geojson(csvreaderresult, {
+            latfield: 'Y',
+            lonfield: 'X'
+        }, function(err, data) {
+            console.log(data);
+            feature = new ol.format.GeoJSON().readFeatures(data, {
+                featureProjection: 'EPSG:3857'
+            });
+            layeritem = rndid;
+            layer[layeritem] = new ol.layer.Vector({
+                title: String(files.name),
+                source: new ol.source.Vector({
+                    features: feature,
+                    params: {
+                        'LAYERS': 'CSV: ' + String(files.name)
+                    }
+                })
+            });
+            setTimeout(function() {
+                console.log(layeritem);
+                map.addLayer(layer[layeritem]);
+                extent = layer[layeritem].getSource().getExtent();
+                map.getView().fit(extent, map.getSize());
+            }, 2000);
+        });
+    }
+}
+
+function createHelpTooltip() {
+    if (helpTooltipElement) {
+        helpTooltipElement.parentNode.removeChild(helpTooltipElement);
+    }
+    helpTooltipElement = document.createElement('div');
+    helpTooltipElement.className = 'olm_tooltip hidden';
+    helpTooltip = new ol.Overlay({
+        element: helpTooltipElement,
+        offset: [15, 0],
+        positioning: 'center-left'
+    });
+    map.addOverlay(helpTooltip);
+}
+
+
+/**
+ * Creates a new measure tooltip
+ */
+function createMeasureTooltip() {
+    if (measureTooltipElement) {
+        measureTooltipElement.parentNode.removeChild(measureTooltipElement);
+    }
+    measureTooltipElement = document.createElement('div');
+    measureTooltipElement.className = 'olm_tooltip olm_tooltip-measure';
+    measureTooltip = new ol.Overlay({
+        element: measureTooltipElement,
+        offset: [0, -15],
+        positioning: 'bottom-center'
+    });
+    map.addOverlay(measureTooltip);
+}
+
+function addInteraction() {
+    typeSelect = $('#select_ukur').val();
+    var type = (typeSelect == '2' ? 'Polygon' : 'LineString');
+    draw = new ol.interaction.Draw({
+        source: draw_source,
+        type: /** @type {ol.geom.GeometryType} */
+            (type),
+        style: new ol.style.Style({
+            fill: new ol.style.Fill({
+                color: 'rgba(255, 255, 255, 0.2)'
+            }),
+            stroke: new ol.style.Stroke({
+                color: 'rgba(0, 0, 0, 0.5)',
+                lineDash: [10, 10],
+                width: 2
+            }),
+            image: new ol.style.Circle({
+                radius: 5,
+                stroke: new ol.style.Stroke({
+                    color: 'rgba(0, 0, 0, 0.7)'
+                }),
+                fill: new ol.style.Fill({
+                    color: 'rgba(255, 255, 255, 0.2)'
+                })
+            })
+        })
+    });
+    map.addInteraction(draw);
+
+    createMeasureTooltip();
+    createHelpTooltip();
+
+    var listener;
+    draw.on('drawstart',
+        function(evt) {
+            // set sketch
+            sketch = evt.feature;
+
+            /** @type {ol.Coordinate|undefined} */
+            var tooltipCoord = evt.coordinate;
+
+            listener = sketch.getGeometry().on('change', function(evt) {
+                var geom = evt.target;
+                var output;
+                if (geom instanceof ol.geom.Polygon) {
+                    output = formatArea(geom);
+                    tooltipCoord = geom.getInteriorPoint().getCoordinates();
+                } else if (geom instanceof ol.geom.LineString) {
+                    output = formatLength(geom);
+                    tooltipCoord = geom.getLastCoordinate();
+                }
+                measureTooltipElement.innerHTML = output;
+                measureTooltip.setPosition(tooltipCoord);
+            });
+        }, this);
+
+    draw.on('drawend',
+        function() {
+            measureTooltipElement.className = 'olm_tooltip olm_tooltip-static';
+            measureTooltip.setOffset([0, -7]);
+            // unset sketch
+            sketch = null;
+            // unset tooltip so that a new one can be created
+            measureTooltipElement = null;
+            createMeasureTooltip();
+            ol.Observable.unByKey(listener);
+        }, this);
+
+}
+
+
+/**
+ * format length output
+ * @param {ol.geom.LineString} line
+ * @return {string}
+ */
+var formatLength = function(line) {
+    var length = ol.Sphere.getLength(line);
+    var output;
+    if ($("#satuan_panjang").val() == '1') {
+        output = (Math.round(length * 100) / 100) +
+            ' ' + 'm';
+    }
+    if ($("#satuan_panjang").val() == '2') {
+        output = (Math.round(length / 1000 * 100) / 100) +
+            ' ' + 'km';
+    }
+    if ($("#satuan_panjang").val() == '3') {
+        output = (Math.round(length / 1000 * 100) / 100) * 0.621371 +
+            ' ' + 'mil';
+    }
+    // if (length > 100) {
+    //     output = (Math.round(length / 1000 * 100) / 100) +
+    //         ' ' + 'km';
+    // } else {
+    //     output = (Math.round(length * 100) / 100) +
+    //         ' ' + 'm';
+    // }
+    return output;
+};
+
+
+/**
+ * Format area output.
+ * @param {ol.geom.Polygon} polygon The polygon.
+ * @return {string} Formatted area.
+ */
+var formatArea = function(polygon) {
+    var area = ol.Sphere.getArea(polygon);
+    var output;
+    if ($("#satuan_luas").val() == '4') {
+        output = (Math.round(area * 100) / 100) +
+            ' ' + 'm<sup>2</sup>';
+    }
+    if ($("#satuan_luas").val() == '5') {
+        output = (Math.round(area / 1000000 * 100) / 100) +
+            ' ' + 'km<sup>2</sup>';
+    }
+    if ($("#satuan_luas").val() == '6') {
+        output = (Math.round(area / 1000000 * 100) / 100) * 0.386102 +
+            ' ' + 'mil<sup>2</sup>';
+    }
+    // if (area > 10000) {
+    //     output = (Math.round(area / 1000000 * 100) / 100) +
+    //         ' ' + 'km<sup>2</sup>';
+    // } else {
+    //     output = (Math.round(area * 100) / 100) +
+    //         ' ' + 'm<sup>2</sup>';
+    // }
+    return output;
+};
+
+function mode_ukur() {
+
+}
+
 // Init slider
 
 var slider_content = "<ul id='slide-out' class='side-nav'><li><h5> Layer</h5></li><a id='addlayer2' class='btn-floating btn-large waves-effect waves-light red'><i class='material-icons'>layers</i></a><li id='layers_item'></li></ul><a href='#' data-activates='slide-out' class='button-collapse' style='display:none';><i class='material-icons'>menu</i></a>";
@@ -113,7 +539,7 @@ var geocoding_content = "<div class='row'><div class='col s12'><div class='row'>
 // eksperimen
 var fab_button = "<div class='fixed-action-btn vertical'><a id='main_menu' class='btn-floating btn-large cyan darken-4 tooltipped' data-position='left' data-tooltip='Menu Utama'><i class='material-icons'>menu</i></a><ul><li><a class='btn-floating cyan lighten-1 modal-trigger tooltipped' href='#modal_addlayer' data-position='left' data-tooltip='Tambah Layer'><i class='material-icons'>playlist_add</i></a></li><li><a class='btn-floating cyan tooltipped button-collapse' data-position='left' data-tooltip='Layer' href='#' data-activates='slide-out'><i class='material-icons'>layers</i></a></li><li><a id='ukur_btn' class='btn-floating cyan darken-1 tooltipped' data-position='left' data-tooltip='Ukur'><i class='material-icons'>border_color</i></a></li><li><a class='btn-floating cyan darken-2 tooltipped' data-position='left' data-tooltip='Cetak'><i class='material-icons'>print</i></a></li><li><a class='btn-floating cyan darken-3 modal-trigger tooltipped' href='#modal_basemap' data-position='left'  data-tooltip='Basemap'><i class='material-icons'>public</i></a></li></ul></div>"
 
-var modal_addlayer = "<div id='modal_addlayer' class='modal bottom-sheet'><div class='modal-content'><h4>Tambah Layer</h4><ul id='tabs_addlayer' class='tabs'><li class='tab col s3'><a class='active' href='#add_dataset'>Dataset</a></li><li class='tab col s3'><a href='#add_url'>URL</a></li><li class='tab col s3'><a href='#add_file'>File</a></li><li class='tab col s3'><a href='#add_simpul'>Simpul</a></li></ul><div id='add_dataset' class='col s12'><div class='row'><div class='col s12'><div class='row'><div class='input-field col s4'><select id='list_workspace'><option value='SEMUA' disable selected>Semua Walidata</option></select></div><div class='input-field col s8'><input id='cari_lokal_layer' type='text' class='validate'><label for='cari_lokal_layer'>Cari Layer</label></div></div></div><div class='col s12'> <ul id='layers_item_list'  class='collection'></ul></div></div></div><div id='add_url' class='col s12'><div class='row'><div class='col s12'><div class='row'><div class='input-field col s2'><select id='srv_type'><option value='WMS' disable selected>OGC WMS</option><option value='ESRI'>ESRI REST</option></select></div><div class='input-field col s8'><input id='url_servis' type='text' class='validate'><label for='url_servis'>URL servis</label></div><div class='col s2'><a id='getwmslist' class='waves-effect waves-light btn'>Ambil List</a></div><div class='col s12'> <ul id='wms_item_list' class='collection'></ul></div></div></div></div></div><div id='add_file' class='col s12'><form action='/file-upload' class='dropzone'><div class='fallback'><input name='file' type='file' multiple /></div></form></div><div id='add_simpul' class='col s12'><div class='row'><div class='col s12'><div class='row'><div class='input-field col s4'><select id='ext_srv_type'><option value='WMS' disable selected>Pilih Servis</option></select></div><div id='url_ext_srv' class='input-field col s6'></div><div class='col s2' id='ext_srv_t'></div><div class='col s12'> <ul id='ext_wms_item_list' class='collection'></ul></div></div></div></div></div></div></div>"
+var modal_addlayer = "<div id='modal_addlayer' class='modal bottom-sheet'><div class='modal-content'><h4>Tambah Layer</h4><ul id='tabs_addlayer' class='tabs'><li class='tab col s3'><a class='active' href='#add_dataset'>Dataset</a></li><li class='tab col s3'><a href='#add_url'>URL</a></li><li class='tab col s3'><a href='#add_file'>File</a></li><li class='tab col s3'><a href='#add_simpul'>Simpul</a></li></ul><div id='add_dataset' class='col s12'><div class='row'><div class='col s12'><div class='row'><div class='input-field col s4'><select id='list_workspace'><option value='SEMUA' disable selected>Semua Walidata</option></select></div><div class='input-field col s8'><input id='cari_lokal_layer' type='text' class='validate'><label for='cari_lokal_layer'>Cari Layer</label></div></div></div><div class='col s12'> <ul id='layers_item_list'  class='collection'></ul></div></div></div><div id='add_url' class='col s12'><div class='row'><div class='col s12'><div class='row'><div class='input-field col s2'><select id='srv_type'><option value='WMS' disable selected>OGC WMS</option><option value='ESRI'>ESRI REST</option></select></div><div class='input-field col s8'><input id='url_servis' type='text' class='validate'><label for='url_servis'>URL servis</label></div><div class='col s2'><a id='getwmslist' class='waves-effect waves-light btn'>Ambil List</a></div><div class='col s12'> <ul id='wms_item_list' class='collection'></ul></div></div></div></div></div><div id='add_file' class='col s12'><div id='dropzone'></div></div><div id='add_simpul' class='col s12'><div class='row'><div class='col s12'><div class='row'><div class='input-field col s4'><select id='ext_srv_type'><option value='WMS' disable selected>Pilih Servis</option></select></div><div id='url_ext_srv' class='input-field col s6'></div><div class='col s2' id='ext_srv_t'></div><div class='col s12'> <ul id='ext_wms_item_list' class='collection'></ul></div></div></div></div></div></div></div>"
 
 var modal_cari = "<div id='modal_cari' class='modal bottom-sheet'><div class='modal-content'><h4>Hasil pencarian</h4><ul id='list_hasil'></ul></div></div>"
 
@@ -123,7 +549,7 @@ var ukur_drop = "<ul id='ukur' class='dropdown-content'><li><a href='#!'>one</a>
 
 var layers = "<ul id='sortableul' class='collapsible' data-collapsible='expandable'></ul>"
 
-var box_ukur = "<div id='box_ukur'><div class='input-field'><select id='select_ukur'><option value='' disabled selected>Pilih pengukuran</option><option value='1'>Panjang</option><option value='2'>Luas</option></select><label>Geometri</label></div><div id='panjang' class='input-field' style='display:none;'><select><option value='' disabled selected>Satuan</option><option value='1'>Meter (m)</option><option value='2'>Kilometer (km)</option><option value='3'>Mil</option></select><label>Satuan</label></div><div id='luas' class='input-field' style='display:none;'><select><option value='' disabled selected>Satuan</option><option value='1'>Meter Persegi (m2)</option><option value='2'>Kilometer Persegi (km2)</option><option value='3'>Mil Persegi</option></select><label>Satuan</label></div></div>"
+var box_ukur = "<div id='box_ukur'><div class='input-field'><select id='select_ukur'><option value='' disabled selected>Pilih pengukuran</option><option value='1'>Panjang</option><option value='2'>Luas</option></select><label>Geometri</label></div><div id='panjang' class='input-field' style='display:none;'><select id='satuan_panjang'><option value=0 disabled selected>Satuan</option><option value=1>Meter (m)</option><option value=2>Kilometer (km)</option><option value=3>Mil</option></select><label>Satuan</label></div><div id='luas' class='input-field' style='display:none;'><select id='satuan_luas'><option value=0 disabled selected>Satuan</option><option value=4>Meter Persegi (m2)</option><option value=5>Kilometer Persegi (km2)</option><option value=6>Mil Persegi</option></select><label>Satuan</label></div></div>"
 
 $('#' + base_div).append(slider_content);
 $('#' + base_div).append(geocoding_content);
@@ -136,13 +562,21 @@ $('#layers_item').append(layers);
 $('#' + base_div).append(fab_button);
 
 var box_ukur_visible = false;
+var start_measure = false;
+
 $('#ukur_btn').on('click', function() {
     if (box_ukur_visible) {
         $('#box_ukur').hide();
         box_ukur_visible = false;
+        start_measure = false;
+        map.removeInteraction(draw);
+        draw_source.clear();
+        $('.olm_tooltip.olm_tooltip-static').remove()
     } else {
         $('#box_ukur').show();
         box_ukur_visible = true;
+        start_measure = true;
+        // addInteraction();
     }
 });
 
@@ -155,17 +589,64 @@ $("#select_ukur").on('change', function() {
         $('#panjang').hide();
         $('#luas').show();
     }
+    if ($("#satuan_panjang").val() || $("#satuan_luas").val()) {
+        map.removeInteraction(draw);
+        draw_source.clear();
+        $('.olm_tooltip.olm_tooltip-static').remove()
+        addInteraction();
+    }
 });
+
+$("#satuan_panjang").on('change', function() {
+    map.removeInteraction(draw);
+    draw_source.clear();
+    $('.olm_tooltip.olm_tooltip-static').remove()
+    addInteraction();
+})
+
+$("#satuan_luas").on('change', function() {
+    map.removeInteraction(draw);
+    draw_source.clear();
+    $('.olm_tooltip.olm_tooltip-static').remove()
+    addInteraction();
+})
 
 $('#main_menu').on('click', function() {
     if (box_ukur_visible) {
         $('#box_ukur').hide();
         box_ukur_visible = false;
+        start_measure = false;
+        map.removeInteraction(draw);
+        draw_source.clear();
+        $('.olm_tooltip.olm_tooltip-static').remove()
     } else {
         $('#box_ukur').hide();
         box_ukur_visible = false;
+        start_measure = false;
+        map.removeInteraction(draw);
+        draw_source.clear();
+        $('.olm_tooltip.olm_tooltip-static').remove()
     }
 });
+
+// $("#dropzone").dropzone({ url: palapa_api_url + "fakepath" });
+$(function() {
+    var dropzone = new Dropzone("#dropzone", {
+        url: palapa_api_url + "fakepath",
+        acceptedFiles: '.zip,.ZIP,.gpx,.GPX,.csv,.CSV'
+    });
+    dropzone.on("success", function(file) {
+        handleFileSelect(file);
+        Materialize.toast('Berkas terupload!', 3000, 'rounded');
+        console.log('ADDED FILE')
+    });
+    dropzone.on("error", function(file) {
+        Materialize.toast('Berkas Tidak Sesuai!', 3000, 'rounded');
+        console.log('ERROR')
+    });
+})
+
+$("#dropzone").append("<div id='dropinfo'>Klik di sini, atau Taruh berkas ZIP (Shapefile), GPX, atau CSV.</div>");
 
 $(document).ready(function() {
     // the "href" attribute of the modal trigger must specify the modal ID that wants to be triggered
@@ -173,7 +654,20 @@ $(document).ready(function() {
     $('.collapsible').collapsible();
     var sortableel = document.getElementById('sortableul');
     var sortableul = Sortable.create(sortableel, {
-        handle: ".collapsible-header"
+        handle: ".collapsible-header",
+        onEnd: function(e) {
+            var itemEl = e.item;
+            var p_id = itemEl.attributes.id.value;
+            curidx = layer[p_id].getZIndex();
+            if (e.newIndex > e.oldIndex) {
+                layer[p_id].setZIndex(e.newIndex + 1);
+            } else if (e.newIndex < e.oldIndex) {
+                layer[p_id].setZIndex(e.newIndex - 1);
+            } else {
+                // layer[p_id].setZIndex(e.newIndex + 1);
+            }
+            console.log(e.item, e.oldIndex, e.newIndex);
+        }
     });
     // $('ul.collapsible').sortable();
     $('select').material_select();
@@ -203,8 +697,9 @@ $(document).ready(function() {
         e.preventDefault();
         e.stopPropagation();
         console.log('ZE')
-        map.getView().fit(map_extent, map.getSize());
+        map.getView().fit(merc_extent, map.getSize());
     });
+
 
 });
 
@@ -250,7 +745,8 @@ $.get(palapa_api_url + "extsrv/list", function(data) {
 var layer_osm = new ol.layer.Tile({
     visible: true,
     preload: Infinity,
-    source: new ol.source.OSM()
+    source: new ol.source.OSM(),
+    zIndex: -10
 });
 
 var layer_rbi = new ol.layer.Tile({
@@ -258,7 +754,8 @@ var layer_rbi = new ol.layer.Tile({
     preload: Infinity,
     source: new ol.source.XYZ({
         url: 'http://portal.ina-sdi.or.id/arcgis/rest/services/IGD/RupabumiIndonesia/MapServer/tile/{z}/{y}/{x}'
-    })
+    }),
+    zIndex: -10
 });
 
 var layer_esri = new ol.layer.Tile({
@@ -266,7 +763,8 @@ var layer_esri = new ol.layer.Tile({
     preload: Infinity,
     source: new ol.source.XYZ({
         url: 'http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-    })
+    }),
+    zIndex: -10
 });
 
 var layer_rbibaru = new ol.layer.Tile({
@@ -274,8 +772,9 @@ var layer_rbibaru = new ol.layer.Tile({
     preload: Infinity,
     source: new ol.source.TileWMS({
         url: 'http://dev1.agrisoft-cb.com:8080/geoserver/gwc/service/wms',
-        params: { LAYERS: 'rbi', VERSION: '1.1.1' }
-    })
+        params: { LAYERS: 'basemap-rbi', VERSION: '1.1.1' }
+    }),
+    zIndex: -10
 });
 
 var overlay = new ol.Overlay({
@@ -286,22 +785,85 @@ var overlay = new ol.Overlay({
     }
 });
 
+var draw_source = new ol.source.Vector();
+var draw_vector = new ol.layer.Vector({
+    source: draw_source,
+    style: new ol.style.Style({
+        fill: new ol.style.Fill({
+            color: 'rgba(255, 255, 255, 0.2)'
+        }),
+        stroke: new ol.style.Stroke({
+            color: '#ffcc33',
+            width: 2
+        }),
+        image: new ol.style.Circle({
+            radius: 7,
+            fill: new ol.style.Fill({
+                color: '#ffcc33'
+            })
+        })
+    }),
+    zIndex: 666666
+});
+
 closer.onclick = function() {
     overlay.setPosition(undefined);
     closer.blur();
     return false;
 };
 
-scline = new ol.control.ScaleLine();
+var scline = new ol.control.ScaleLine({
+    units: 'metric',
+    minWidth: 100
+});
+
+merc_extent = ol.proj.transformExtent(map_extent, ol.proj.get('EPSG:4326'), ol.proj.get('EPSG:3857'))
+
+var mouseMoveHandler = function(evt) {
+    if (sketch) {
+        var output;
+        var geom = (sketch.getGeometry());
+        if (geom instanceof ol.geom.Polygon) {
+            output = formatArea( /** @type {ol.geom.Polygon} */ (geom));
+
+        } else if (geom instanceof ol.geom.LineString) {
+            output = formatLength( /** @type {ol.geom.LineString} */ (geom));
+        }
+        sketchElement.innerHTML = output;
+    }
+};
+
+var pointerMoveHandler = function(evt) {
+    if (evt.dragging) {
+        return;
+    }
+    /** @type {string} */
+    var helpMsg = 'Klik untuk mulai menggambar';
+
+    if (sketch) {
+        var geom = (sketch.getGeometry());
+        if (geom instanceof ol.geom.Polygon) {
+            helpMsg = continuePolygonMsg;
+        } else if (geom instanceof ol.geom.LineString) {
+            helpMsg = continueLineMsg;
+        }
+    }
+
+    if (start_measure && $("#select_ukur").val() && ($("#satuan_panjang").val() || $("#satuan_luas").val())) {
+        helpTooltipElement.innerHTML = helpMsg;
+        helpTooltip.setPosition(evt.coordinate);
+        helpTooltipElement.classList.remove('hidden');
+    }
+};
 
 var map = new ol.Map({
-    layers: [layer_osm, layer_rbi, layer_esri, layer_rbibaru],
+    layers: [layer_osm, layer_rbi, layer_esri, layer_rbibaru, draw_vector],
     target: map_div,
     overlays: [overlay],
     view: new ol.View({
-        projection: 'EPSG:4326',
-        center: [116.5, -4],
-        extent: map_extent,
+        // projection: 'EPSG:4326',
+        // center: [116.5, -4],
+        extent: merc_extent,
         zoom: 5,
         minZoom: 4,
         maxZoom: 22
@@ -309,17 +871,32 @@ var map = new ol.Map({
     controls: ol.control.defaults().extend([scline])
 });
 
-map.getView().fit(map_extent, map.getSize());
+map.getView().fit(merc_extent, map.getSize());
+
+// $(map.getViewport()).on('mousemove', mouseMoveHandler);
+
+
+map.on('pointermove', pointerMoveHandler);
+
+map.getViewport().addEventListener('mouseout', function() {
+    if (start_measure && $("#select_ukur").val() && ($("#satuan_panjang").val() != 0 || $("#satuan_luas").val() != 0)) {
+        helpTooltipElement.classList.add('hidden');
+    }
+});
+
 
 map.on('singleclick', function(evt) {
     var coordinate = evt.coordinate;
     var hdms = ol.coordinate.toStringHDMS(coordinate);
     console.log()
 
-    $('#popup-content').empty();
-    var content_html = '<p>You clicked here:</p><code>' + hdms + '</code>';
-    $('#popup-content').append(content_html)
-    overlay.setPosition(coordinate);
+    if (!start_measure) {
+        $('#popup-content').empty();
+        var content_html = '<p>You clicked here:</p><code>' + hdms + '</code>';
+        $('#popup-content').append(content_html)
+        overlay.setPosition(coordinate);
+
+    }
 });
 
 // EVENT HANDLING
@@ -373,7 +950,7 @@ $('#list_hasil').on('click', function(e) {
     for (i = 0; i < hasil_cari.length; i++) {
         if (hasil_cari[i].place_id == String(p_id)) {
             feature = new ol.format.GeoJSON().readFeatures(hasil_cari[i].geojson, {
-                featureProjection: 'EPSG:4326'
+                featureProjection: 'EPSG:3857'
             });
 
             rndlayerid = randomNumber();
@@ -396,6 +973,7 @@ $('#list_hasil').on('click', function(e) {
             // listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + hasil_cari[i].display_name + "</div><i class='material-icons right'>comment</i><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div><span>Lorem ipsum dolor sit amet.</span></div></li>"
             // $('#sortableul').append(listappend);
             layer_index.push(rndlayerid);
+            layer[rndlayerid].setZIndex(layer.length)
         }
     }
 });
@@ -623,7 +1201,9 @@ $('#getwmslist').on('click', function() {
     srv_url = $('#url_servis').val();
     if (srv_type == 'WMS') {
         wmscapurl = srv_url + '?service=wms&request=GetCapabilities';
-        wmscapobj = $.get(wmscapurl);
+        wmscapobj = $.get(_proxy + encodeURIComponent(wmscapurl));
+        // wmscapurl = srv_url + '?service=wms&request=GetCapabilities';
+        // wmscapobj = $.get(wmscapurl);
         // wmscap = new WMSCapabilities().parse(wmscapobj.responseText);
         setTimeout(() => {
             wmscap = new WMSCapabilities().parse(wmscapobj.responseText);
@@ -636,7 +1216,7 @@ $('#getwmslist').on('click', function() {
                 item_html = "<li id='" + wmslayerlist[i].Name + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + wmslayerlist[i].Name + "'>" + wmslayerlist[i].Title + "</span></li>";
                 $('#wms_item_list').append(item_html);
             }
-        }, 1500);
+        }, 2500);
     } else {
 
     }
@@ -653,12 +1233,22 @@ $('#wms_item_list').on('click', function(e) {
         var min_x, min_y, max_x, max_y, layer_nativename;
         for (i = 0; i < raw_out_wms.length; i++) {
             // console.log(raw_local_wms[i].layer_nativename)
-            if (raw_out_wms[i].Name.indexOf(p_id) >= 0) {
+            try {
+                if (raw_out_wms[i].Name.indexOf(p_id) >= 0) {
+                    min_x = raw_out_wms[i].EX_GeographicBoundingBox[0];
+                    min_y = raw_out_wms[i].EX_GeographicBoundingBox[1];
+                    max_x = raw_out_wms[i].EX_GeographicBoundingBox[2];
+                    max_y = raw_out_wms[i].EX_GeographicBoundingBox[3];
+                    layer_nativename = raw_out_wms[i].Name;
+                }
+            } catch (error) {
+                // if (raw_out_wms[i].Title.indexOf(p_id) >= 0) {
                 min_x = raw_out_wms[i].EX_GeographicBoundingBox[0];
                 min_y = raw_out_wms[i].EX_GeographicBoundingBox[1];
                 max_x = raw_out_wms[i].EX_GeographicBoundingBox[2];
                 max_y = raw_out_wms[i].EX_GeographicBoundingBox[3];
-                layer_nativename = raw_out_wms[i].Name;
+                layer_nativename = raw_out_wms[i].Title;
+                // }    
             }
         }
         p_name = $(e.target).find('.layermark').first().text();
@@ -685,6 +1275,7 @@ $('#wms_item_list').on('click', function(e) {
 $("#ext_srv_type").on('change', function() {
     tipe = 'WMS';
     $("#url_ext_srv").text($("#ext_srv_type").val())
+    $('#ext_wms_item_list').empty();
     for (i = 0; i < ext_srv.length; i++) {
         if (ext_srv[i].url == $("#ext_srv_type").val()) {
             if (ext_srv[i].type == 'OGC WMS') { tipe = 'WMS' } else { tipe = 'ESRI' };
@@ -706,7 +1297,18 @@ $("#ext_srv_type").on('change', function() {
                     }
                 }, 1500);
             } else {
-
+                esricapurl = ext_srv[i].url + '?f=pjson';
+                var esricapobj;
+                $.get(esricapurl, function(data) {
+                    console.log(JSON.parse(data));
+                    layers = JSON.parse(data).layers;
+                    for (i = 0; i < layers.length; i++) {
+                        item_html = "<li id='" + layers[i].id + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + layers[i].id + "'>" + layers[i].name + "</span></li>";
+                        $('#ext_wms_item_list').append(item_html);
+                    }
+                });
+                // esricapjson = JSON.parse(esricapobj.responseText);
+                // console.log(esricapobj);
             }
         }
     }
@@ -749,7 +1351,7 @@ $('#ext_wms_item_list').on('click', function(e) {
         console.log(p_state, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
         olAddWMSLayer(srv_url, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
     } else {
-
+        olAddRESTLayer(srv_url, p_id);
     }
 })
 
@@ -807,6 +1409,12 @@ $("#sortableul").on('change', function(e) {
 
 $('#addlayer2').on('click', function(e) {
     $('#modal_addlayer').modal('open');
+    e.preventDefault();
+    e.stopPropagation();
+})
+
+$('#dropzone').on('submit', function(e) {
+    console.log('SUBMIT')
     e.preventDefault();
     e.stopPropagation();
 })
