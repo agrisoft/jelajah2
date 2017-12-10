@@ -10,6 +10,8 @@ var layer = [];
 var raw_local_wms;
 var raw_out_wms;
 var ext_srv;
+var basemaps;
+var basemap = [];
 var list_workspace;
 var hasil_cari;
 var container = document.getElementById('popup');
@@ -532,8 +534,20 @@ var formatArea = function(polygon) {
     return output;
 };
 
-function mode_ukur() {
+function switchbaselayer(basetitle) {
+    setTimeout(() => {
 
+        for (i = 0; i < default_layers.length; i++) {
+            if (basetitle == default_layers[i].get('title')) {
+                isit = true;
+                default_layers[i].setVisible(true);
+            } else {
+                isit = false;
+                default_layers[i].setVisible(false);
+            }
+            console.log(basetitle, default_layers[i].get('title'), isit)
+        }
+    }, 500);
 }
 
 // Init slider
@@ -550,7 +564,7 @@ var modal_addlayer = "<div id='modal_addlayer' class='modal bottom-sheet'><div c
 
 var modal_cari = "<div id='modal_cari' class='modal bottom-sheet'><div class='modal-content'><h4>Hasil pencarian</h4><ul id='list_hasil'></ul></div></div>"
 
-var modal_basemap = "<div id='modal_basemap' class='modal bottom-sheet'><div class='modal-content basemap'><div class='row'><div id='base_osm' class='col s6 m4 l2'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>OSM</span></div></div></div><div class='col s6 m4 l2' id='base_rbi'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>RBI</span></div></div></div><div id='base_esri' class='col s6 m4 l2'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>ESRI</span></div></div></div><div id='base_rbibaru' class='col s6 m4 l2'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>RBI OS</span></div></div></div></div></div</div>"
+var modal_basemap = "<div id='modal_basemap' class='modal bottom-sheet'><div class='modal-content basemap'><div id='listbaselayers' class='row'><div id='base_osm' class='col s6 m4 l2'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>OSM</span></div></div></div><div class='col s6 m4 l2' id='base_rbi'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>RBI</span></div></div></div><div id='base_esri' class='col s6 m4 l2'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>ESRI</span></div></div></div><div id='base_rbibaru' class='col s6 m4 l2'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>RBI OS</span></div></div></div></div></div></div>"
 
 var ukur_drop = "<ul id='ukur' class='dropdown-content'><li><a href='#!'>one</a></li><li><a href='#!'>two</a></li><li class='divider'></li><li><a href='#!'>three</a></li><li><a href='#!'><i class='material-icons'>view_module</i>four</a></li><li><a href='#!'><i class='material-icons'>cloud</i>five</a></li></ul>"
 
@@ -707,7 +721,14 @@ $(document).ready(function() {
         map.getView().fit(merc_extent, map.getSize());
     });
 
-
+    for (var key in basemap) {
+        if (key === 'length' || !basemap.hasOwnProperty(key)) continue;
+        console.log(basemap[key])
+        default_layers.push(basemap[key]);
+        map.addLayer(basemap[key]);
+        item_html = "<div id='" + key + "' class='col s6 m4 l2'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>" + basemap[key].get('title') + "</span></div></div></div>";
+        $("#listbaselayers").append(item_html);
+    }
 });
 
 
@@ -743,6 +764,35 @@ $.get(palapa_api_url + "extsrv/list", function(data) {
     }
 })
 
+$.get(palapa_api_url + "basemaps/list", function(data) {
+    window.basemaps = JSON.parse(data);
+    for (i = 0; i < basemaps.length; i++) {
+        basename = basemaps[i].name.replace(' ', '_').toLowerCase();
+        if (basemaps[i].type == 'TMS') {
+            window.basemap[basename] = new ol.layer.Tile({
+                title: basemaps[i].name,
+                visible: false,
+                preload: Infinity,
+                source: new ol.source.XYZ({
+                    url: basemaps[i].url
+                }),
+                zIndex: -10
+            });
+        } else {
+            window.basemap[basename] = new ol.layer.Tile({
+                title: basemaps[i].name,
+                visible: false,
+                preload: Infinity,
+                source: new ol.source.TileWMS({
+                    url: basemaps[i].url,
+                    params: { LAYERS: basemaps[i].params, VERSION: '1.1.1' }
+                }),
+                zIndex: -10
+            });
+        }
+    }
+})
+
 // Custom control
 
 // Init map
@@ -750,6 +800,7 @@ $.get(palapa_api_url + "extsrv/list", function(data) {
 // var layers = [];
 
 var layer_osm = new ol.layer.Tile({
+    title: 'OSM',
     visible: true,
     preload: Infinity,
     source: new ol.source.OSM(),
@@ -757,6 +808,7 @@ var layer_osm = new ol.layer.Tile({
 });
 
 var layer_rbi = new ol.layer.Tile({
+    title: 'RBI',
     visible: false,
     preload: Infinity,
     source: new ol.source.XYZ({
@@ -766,6 +818,7 @@ var layer_rbi = new ol.layer.Tile({
 });
 
 var layer_esri = new ol.layer.Tile({
+    title: 'ESRI',
     visible: false,
     preload: Infinity,
     source: new ol.source.XYZ({
@@ -775,6 +828,7 @@ var layer_esri = new ol.layer.Tile({
 });
 
 var layer_rbibaru = new ol.layer.Tile({
+    title: 'RBI OS',
     visible: false,
     preload: Infinity,
     source: new ol.source.TileWMS({
@@ -785,6 +839,7 @@ var layer_rbibaru = new ol.layer.Tile({
 });
 
 var overlay = new ol.Overlay({
+    title: 'Overlay',
     element: container,
     autoPan: true,
     autoPanAnimation: {
@@ -812,6 +867,8 @@ var draw_vector = new ol.layer.Vector({
     }),
     zIndex: 666666
 });
+
+var default_layers = [layer_osm, layer_rbi, layer_esri, layer_rbibaru, draw_vector];
 
 closer.onclick = function() {
     overlay.setPosition(undefined);
@@ -864,7 +921,7 @@ var pointerMoveHandler = function(evt) {
 };
 
 var map = new ol.Map({
-    layers: [layer_osm, layer_rbi, layer_esri, layer_rbibaru, draw_vector],
+    layers: default_layers,
     target: map_div,
     overlays: [overlay],
     view: new ol.View({
@@ -982,33 +1039,34 @@ function getInfo(evt, layer) {
 
 // EVENT HANDLING
 
-$('#base_osm').on('click', function() {
-    layer_osm.setVisible(true);
-    layer_rbi.setVisible(false);
-    layer_esri.setVisible(false);
-    layer_rbibaru.setVisible(false);
-});
+// $('#base_osm').on('click', function() {
+//     layer_osm.setVisible(true);
+//     layer_rbi.setVisible(false);
+//     layer_esri.setVisible(false);
+//     layer_rbibaru.setVisible(false);
+// });
 
-$('#base_rbi').on('click', function() {
-    layer_osm.setVisible(false);
-    layer_rbi.setVisible(true);
-    layer_esri.setVisible(false);
-    layer_rbibaru.setVisible(false);
-});
+// $('#base_rbi').on('click', function() {
+//     layer_osm.setVisible(false);
+//     layer_rbi.setVisible(true);
+//     layer_esri.setVisible(false);
+//     layer_rbibaru.setVisible(false);
+// });
 
-$('#base_esri').on('click', function() {
-    layer_osm.setVisible(false);
-    layer_rbi.setVisible(false);
-    layer_esri.setVisible(true);
-    layer_rbibaru.setVisible(false);
-});
+// $('#base_esri').on('click', function() {
+//     layer_osm.setVisible(false);
+//     layer_rbi.setVisible(false);
+//     layer_esri.setVisible(true);
+//     layer_rbibaru.setVisible(false);
+// });
 
-$('#base_rbibaru').on('click', function() {
-    layer_osm.setVisible(false);
-    layer_rbi.setVisible(false);
-    layer_esri.setVisible(false);
-    layer_rbibaru.setVisible(true);
-});
+// $('#base_rbibaru').on('click', function() {
+//     layer_osm.setVisible(false);
+//     layer_rbi.setVisible(false);
+//     layer_esri.setVisible(false);
+//     layer_rbibaru.setVisible(true);
+// });
+
 
 $("#caribtn").click(function() {
     geocaritext = document.getElementById('cari_geocoding').value;
@@ -1058,6 +1116,11 @@ $('#list_hasil').on('click', function(e) {
         }
     }
 });
+
+$("#listbaselayers").on('click', function(e) {
+    base_id = $(e.target).next('span').text();
+    switchbaselayer(base_id);
+})
 
 $('#layers_item_list').on('click', function(e) {
     p_id = $(e.target).attr('id');
