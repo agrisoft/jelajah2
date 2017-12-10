@@ -65,7 +65,8 @@ function olAddWMSLayer(serviceUrl, layername, layermark, min_x, min_y, max_x, ma
     rndlayerid = layer_count;
     layer_source[rndlayerid] = new ol.source.TileWMS({
         url: serviceUrl,
-        params: { LAYERS: layername, TILED: true, SRS: 'EPSG:3857' }
+        params: { LAYERS: layername, TILED: true, SRS: 'EPSG:3857' },
+        crossOrigin: 'anonymous'
     })
     layer[rndlayerid] = new ol.layer.Tile({
         title: layermark,
@@ -78,7 +79,7 @@ function olAddWMSLayer(serviceUrl, layername, layermark, min_x, min_y, max_x, ma
     map.addLayer(layer[rndlayerid]);
     console.log(rndlayerid, layermark, layer[rndlayerid].get('title'))
     setTimeout(() => {
-        listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><i id='getinfo' class='material-icons right'>comment</i><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+        listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
         $('#sortableul').append(listappend);
         info_layer.push(rndlayerid);
         extent = layer[rndlayerid].getExtent();
@@ -102,7 +103,8 @@ function olAddRESTLayer(serviceUrl, id) {
     // })
     layer_source[rndlayerid] = new ol.source.TileArcGISRest({
         // projection: projection,
-        url: serviceUrl
+        url: serviceUrl,
+        crossOrigin: 'anonymous'
     })
     layer[rndlayerid] = new ol.layer.Tile({
         title: id,
@@ -114,7 +116,7 @@ function olAddRESTLayer(serviceUrl, id) {
     });
     map.addLayer(layer[rndlayerid]);
     setTimeout(() => {
-        listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><i id='getinfo' class='material-icons right'>comment</i><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+        listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
         $('#sortableul').append(listappend);
         info_layer.push(rndlayerid);
         extent = layer[rndlayerid].getExtent();
@@ -173,17 +175,13 @@ function handleFileSelect(evt) {
     if (is_zip.exec(f.name)) {
         console.log('ZIP');
         loadShpZip(f, rndlayerid);
-        // $("#layerlistid ul").append('<li class="ui-state-default" id="' + rndlayerid + '"><strong>SHP :</strong> ' + f.name + ' <input type="checkbox" checked="true" id="c_' + rndlayerid + '" onchange="layerVis(' + rndlayerid + ')"><span class="fa fa-times" aria-hidden="true"  id="r_' + rndlayerid + '" onClick="layerRm(' + rndlayerid + ')"></span><span class="fa fa-map-o" aria-hidden="true"  id="z_' + rndlayerid + '" onClick="layerZm(' + rndlayerid + ')"></span></li>');
-        // uploadedfile = document.getElementById('files').value;
     } else if (is_gpx.exec(f.name)) {
         console.log('GPX');
         loadGpx(f, rndlayerid);
-        // $("#layerlistid ul").append('<li class="ui-state-default" id="' + rndlayerid + '"><strong>GPX :</strong> ' + f.name + ' <input type="checkbox" checked="true" id="c_' + rndlayerid + '" onchange="layerVis(' + rndlayerid + ')"><span class="fa fa-times" aria-hidden="true"  id="r_' + rndlayerid + '" onClick="layerRm(' + rndlayerid + ')"></span><span class="fa fa-map-o" aria-hidden="true"  id="z_' + rndlayerid + '" onClick="layerZm(' + rndlayerid + ')"></span></li>');
     } else if (is_csv.exec(f.name)) {
         // $("#csv_dialog").dialog("open");
         event.preventDefault();
         loadCSV(f, rndlayerid);
-        // $("#layerlistid ul").append('<li class="ui-state-default" id="' + rndlayerid + '"><strong>CSV :</strong> ' + f.name + ' <input type="checkbox" checked="true" id="c_' + rndlayerid + '" onchange="layerVis(' + rndlayerid + ')"><span class="fa fa-times" aria-hidden="true"  id="r_' + rndlayerid + '" onClick="layerRm(' + rndlayerid + ')"></span><span class="fa fa-map-o" aria-hidden="true"  id="z_' + rndlayerid + '" onClick="layerZm(' + rndlayerid + ')"></span></li>');
         console.log('CSV');
     } else {
         alert('Type berkas tidak didukung!');
@@ -246,6 +244,7 @@ function loadShpZip(files, rndid) {
         layeritem = rndlayerid;
         layer[layeritem] = new ol.layer.Vector({
             title: String(files.name),
+            tipe: 'SHP',
             source: new ol.source.Vector({
                 features: feature,
                 style: vector_style,
@@ -261,7 +260,9 @@ function loadShpZip(files, rndid) {
             map.getView().fit(extent, map.getSize());
             layer_index.push(rndlayerid);
             layer[rndlayerid].setZIndex(layer.length);
-            layer[rndlayerid].setStyle(vector_style)
+            layer[rndlayerid].setStyle(vector_style);
+            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style=' padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+            $('#sortableul').append(listappend);
         }, 2000);
         //   delete layer;
     });
@@ -289,6 +290,7 @@ function loadGpx(files, rndid) {
             featureProjection: 'EPSG:3857'
         }); // console.log(gpxreaderresult);    
         layer[rndlayerid] = new ol.layer.Vector({
+            tipe: 'GPX',
             source: new ol.source.Vector({
                 features: gpxfeatures,
                 params: {
@@ -305,6 +307,8 @@ function loadGpx(files, rndid) {
             layer_index.push(rndlayerid);
             layer[rndlayerid].setZIndex(layer.length);
             layer[rndlayerid].setStyle(vector_style)
+            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style=' padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+            $('#sortableul').append(listappend);
         }, 2000);
     };
 
@@ -344,6 +348,7 @@ function loadCSV(files, rndid) {
             layeritem = rndid;
             layer[layeritem] = new ol.layer.Vector({
                 title: String(files.name),
+                tipe: 'CSV',
                 source: new ol.source.Vector({
                     features: feature,
                     params: {
@@ -356,6 +361,8 @@ function loadCSV(files, rndid) {
                 map.addLayer(layer[layeritem]);
                 extent = layer[layeritem].getSource().getExtent();
                 map.getView().fit(extent, map.getSize());
+                listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style=' padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+                $('#sortableul').append(listappend);
             }, 2000);
         });
     }
@@ -891,13 +898,87 @@ map.on('singleclick', function(evt) {
     console.log()
 
     if (!start_measure) {
-        $('#popup-content').empty();
-        var content_html = '<p>You clicked here:</p><code>' + hdms + '</code>';
-        $('#popup-content').append(content_html)
-        overlay.setPosition(coordinate);
+        map.forEachLayerAtPixel(evt.pixel, function(layer) {
+            console.warn('CALLBACK')
+        }, this, function(layer) {
+            console.log('FILTER')
+            var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
+                return feature;
+            });
+            console.log(layer, feature);
+            if (feature) {
+                return true
+            } else {
+                return false
+            }
+        })
 
+        var layerWithWmsSource = map.forEachLayerAtPixel(evt.pixel,
+            function(layer) {
+                // return only layers with ol.source.TileWMS
+                var source = layer.getSource();
+                if (source instanceof ol.source.TileWMS) {
+                    return layer;
+                }
+            });
+        if (layerWithWmsSource) {
+            $('#popup-content').empty();
+            getInfo(evt, layerWithWmsSource);
+            overlay.setPosition(coordinate);
+        }
+
+        // Attempt to find a feature in one of the visible vector layers
+        var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
+            return feature;
+        });
+
+        var content_html;
+        if (feature) {
+            console.log(feature)
+            $('#popup-content').empty();
+            fkeys = feature.getKeys();
+            var tabel_info_head = "<table class='highlight'><thead><tr><th>Key</th><th>Value</th></tr></thead><tbody id='isiinfo'></tbody></table>";
+            $('#popup-content').append(tabel_info_head)
+            for (i = 0; i < fkeys.length; i++) {
+                if (fkeys[i] != 'geometry') {
+                    // content_html = "<p>" + fkeys[i] + ": " + feature.get(fkeys[i]) + "</p>";
+                    // $('#popup-content').append(content_html)
+                    content_html = "<tr><td>" + fkeys[i] + "</td><td>" + feature.get(fkeys[i]) + "</td></tr>";
+                    $('#isiinfo').append(content_html)
+                }
+            }
+            // $.each(feature.S, function(index, value) {
+            //     console.log(index, value);
+            //     content_html = "<p>" + index + ": " + value + "</p>";
+            //     $('#popup-content').append(content_html)
+            // });
+            // var content_html = '<p>You clicked here:</p><code>' + hdms + '</code>';
+            $('#popup-content').append(content_html)
+            overlay.setPosition(coordinate);
+        }
     }
 });
+
+function getInfo(evt, layer) {
+    var resolution = map.getView().getResolution();
+    var url = layer.getSource().getGetFeatureInfoUrl(evt.coordinate,
+        resolution, 'EPSG:3857', { 'INFO_FORMAT': 'application/json' });
+    if (url) {
+        console.log(url)
+        var infos;
+        var tabel_info_head = "<table class='highlight'><thead><tr><th>Key</th><th>Value</th></tr></thead><tbody id='isiinfo'></tbody></table>";
+        $('#popup-content').append(tabel_info_head)
+        $.get(url, function(data) {
+            console.log(data)
+            infos = data.features[0].properties;
+            for (var key in infos) {
+                var value = infos[key];
+                content_html = "<tr><td>" + key + "</td><td>" + value + "</td></tr>";
+                $('#isiinfo').append(content_html)
+            }
+        })
+    }
+}
 
 // EVENT HANDLING
 
@@ -968,7 +1049,7 @@ $('#list_hasil').on('click', function(e) {
             map.addLayer(layer[rndlayerid]);
             extent = layer[rndlayerid].getSource().getExtent();
             map.getView().fit(extent, map.getSize());
-            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><i id='getinfo' class='material-icons right'>comment</i><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
             $('#sortableul').append(listappend);
             // listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + hasil_cari[i].display_name + "</div><i class='material-icons right'>comment</i><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div><span>Lorem ipsum dolor sit amet.</span></div></li>"
             // $('#sortableul').append(listappend);

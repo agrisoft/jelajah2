@@ -230,7 +230,11 @@ li.collection-item:hover {
     border: 1px solid #cccccc;
     bottom: 12px;
     left: -50px;
-    min-width: 280px;
+    min-width: 350px;
+    /* max-height: 400px; */
+    font-size: small;
+    line-height: 1;
+    /* overflow: auto; */
 }
 
 .ol-popup:after,
@@ -309,6 +313,11 @@ input[type=range]+.thumb.active .value {
     background-color: rgb(0, 96, 100);
     border: none;
     border-radius: 2px;
+}
+
+#popup-content {
+    max-height: 350px;
+    overflow: auto;
 }
 
 .ol-attribution button,
