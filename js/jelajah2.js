@@ -536,7 +536,6 @@ var formatArea = function(polygon) {
 
 function switchbaselayer(basetitle) {
     setTimeout(() => {
-
         for (i = 0; i < default_layers.length; i++) {
             if (basetitle == default_layers[i].get('title')) {
                 isit = true;
@@ -1119,6 +1118,9 @@ $('#list_hasil').on('click', function(e) {
 
 $("#listbaselayers").on('click', function(e) {
     base_id = $(e.target).next('span').text();
+    if (!base_id) {
+        base_id = $(e.target).text();
+    }
     switchbaselayer(base_id);
 })
 
