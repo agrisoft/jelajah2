@@ -1,6 +1,7 @@
 // Jelajah v2
 // 2017. Tejo Damai Santoso
 // Agrisoft
+// v0.7b
 
 // Init UI
 
