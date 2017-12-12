@@ -1436,7 +1436,31 @@ $('#getwmslist').on('click', function() {
         }
         getWMSdata();
     } else {
+        esricapurl = srv_url + '?f=pjson';
 
+        function getRESTdata() {
+            $.ajax({
+                url: esricapurl,
+                async: false,
+                success: function(data) {
+                    layers = JSON.parse(data).layers;
+                    console.log(layers)
+                    for (i = 0; i < layers.length; i++) {
+                        item_html = "<li id='" + layers[i].id + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + layers[i].id + "'>" + layers[i].name + "</span></li>";
+                        $('#wms_item_list').append(item_html);
+                    }
+                }
+            })
+        }
+        getRESTdata();
+        // $.get(esricapurl, function(data) {
+        //     console.log(JSON.parse(data));
+        //     layers = JSON.parse(data).layers;
+        //     for (i = 0; i < layers.length; i++) {
+        //         item_html = "<li id='" + layers[i].id + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + layers[i].id + "'>" + layers[i].name + "</span></li>";
+        //         $('#ext_wms_item_list').append(item_html);
+        //     }
+        // });
     }
 })
 
@@ -1486,7 +1510,7 @@ $('#wms_item_list').on('click', function(e) {
         console.log(p_state, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
         olAddWMSLayer(srv_url, p_id, p_name, min_x, min_y, max_x, max_y, layer_nativename);
     } else {
-
+        olAddRESTLayer(srv_url, p_id);
     }
 })
 
@@ -1521,16 +1545,27 @@ $("#ext_srv_type").on('change', function() {
             } else {
                 esricapurl = ext_srv[i].url + '?f=pjson';
                 var esricapobj;
-                $.get(esricapurl, function(data) {
-                    console.log(JSON.parse(data));
-                    layers = JSON.parse(data).layers;
-                    for (i = 0; i < layers.length; i++) {
-                        item_html = "<li id='" + layers[i].id + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + layers[i].id + "'>" + layers[i].name + "</span></li>";
-                        $('#ext_wms_item_list').append(item_html);
-                    }
-                });
-                // esricapjson = JSON.parse(esricapobj.responseText);
-                // console.log(esricapobj);
+                $.ajax({
+                        url: esricapurl,
+                        async: false,
+                        success: function(data) {
+                            layers = JSON.parse(data).layers;
+                            for (i = 0; i < layers.length; i++) {
+                                item_html = "<li id='" + layers[i].id + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + layers[i].id + "'>" + layers[i].name + "</span></li>";
+                                $('#ext_wms_item_list').append(item_html);
+                            }
+                        }
+                    })
+                    // $.get(esricapurl, function(data) {
+                    //     console.log(JSON.parse(data));
+                    //     layers = JSON.parse(data).layers;
+                    //     for (i = 0; i < layers.length; i++) {
+                    //         item_html = "<li id='" + layers[i].id + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + layers[i].id + "'>" + layers[i].name + "</span></li>";
+                    //         $('#ext_wms_item_list').append(item_html);
+                    //     }
+                    // });
+                    // esricapjson = JSON.parse(esricapobj.responseText);
+                    // console.log(esricapobj);
             }
         }
     }
