@@ -659,6 +659,7 @@ $(document).ready(function() {
     }
 
     $('#ukur_btn').on('click', function() {
+        draw_vector.setVisible(true);
         if (box_ukur_visible) {
             $('#box_ukur').hide();
             box_ukur_visible = false;
@@ -675,6 +676,7 @@ $(document).ready(function() {
     });
 
     $("#select_ukur").on('change', function() {
+        draw_vector.setVisible(true);
         console.log($("#select_ukur").val())
         if ($("#select_ukur").val() == 1) {
             $('#panjang').show();
@@ -692,6 +694,7 @@ $(document).ready(function() {
     });
 
     $("#satuan_panjang").on('change', function() {
+        draw_vector.setVisible(true);
         map.removeInteraction(draw);
         draw_source.clear();
         $('.olm_tooltip.olm_tooltip-static').remove()
@@ -699,6 +702,7 @@ $(document).ready(function() {
     })
 
     $("#satuan_luas").on('change', function() {
+        draw_vector.setVisible(true);
         map.removeInteraction(draw);
         draw_source.clear();
         $('.olm_tooltip.olm_tooltip-static').remove()
@@ -926,6 +930,7 @@ var mouseMoveHandler = function(evt) {
 };
 
 var pointerMoveHandler = function(evt) {
+    draw_vector.setVisible(true);
     if (evt.dragging) {
         return;
     }
@@ -966,7 +971,6 @@ var map = new ol.Map({
 map.getView().fit(merc_extent, map.getSize());
 
 // $(map.getViewport()).on('mousemove', mouseMoveHandler);
-
 
 map.on('pointermove', pointerMoveHandler);
 
@@ -1186,6 +1190,7 @@ $("#listbaselayers").on('click', function(e) {
         base_id = $(e.target).text();
     }
     switchbaselayer(base_id);
+    draw_vector.setVisible(true);
 })
 
 $('#layers_item_list').on('click', function(e) {
