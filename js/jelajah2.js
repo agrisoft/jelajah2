@@ -540,9 +540,6 @@ function switchbaselayer(basetitle) {
             if (basetitle == default_layers[i].get('title')) {
                 isit = true;
                 default_layers[i].setVisible(true);
-            } else if (typeof default_layers[i].get('title') == 'undefined') {
-                isit = false;
-                default_layers[i].setVisible(true);
             } else {
                 isit = false;
                 default_layers[i].setVisible(false);
