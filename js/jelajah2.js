@@ -587,70 +587,6 @@ $('#' + base_div).append(fab_button);
 var box_ukur_visible = false;
 var start_measure = false;
 
-$('#ukur_btn').on('click', function() {
-    if (box_ukur_visible) {
-        $('#box_ukur').hide();
-        box_ukur_visible = false;
-        start_measure = false;
-        map.removeInteraction(draw);
-        draw_source.clear();
-        $('.olm_tooltip.olm_tooltip-static').remove()
-    } else {
-        $('#box_ukur').show();
-        box_ukur_visible = true;
-        start_measure = true;
-        // addInteraction();
-    }
-});
-
-$("#select_ukur").on('change', function() {
-    console.log($("#select_ukur").val())
-    if ($("#select_ukur").val() == 1) {
-        $('#panjang').show();
-        $('#luas').hide();
-    } else {
-        $('#panjang').hide();
-        $('#luas').show();
-    }
-    if ($("#satuan_panjang").val() || $("#satuan_luas").val()) {
-        map.removeInteraction(draw);
-        draw_source.clear();
-        $('.olm_tooltip.olm_tooltip-static').remove()
-        addInteraction();
-    }
-});
-
-$("#satuan_panjang").on('change', function() {
-    map.removeInteraction(draw);
-    draw_source.clear();
-    $('.olm_tooltip.olm_tooltip-static').remove()
-    addInteraction();
-})
-
-$("#satuan_luas").on('change', function() {
-    map.removeInteraction(draw);
-    draw_source.clear();
-    $('.olm_tooltip.olm_tooltip-static').remove()
-    addInteraction();
-})
-
-$('#main_menu').on('click', function() {
-    if (box_ukur_visible) {
-        $('#box_ukur').hide();
-        box_ukur_visible = false;
-        start_measure = false;
-        map.removeInteraction(draw);
-        draw_source.clear();
-        $('.olm_tooltip.olm_tooltip-static').remove()
-    } else {
-        $('#box_ukur').hide();
-        box_ukur_visible = false;
-        start_measure = false;
-        map.removeInteraction(draw);
-        draw_source.clear();
-        $('.olm_tooltip.olm_tooltip-static').remove()
-    }
-});
 
 // $("#dropzone").dropzone({ url: palapa_api_url + "fakepath" });
 $(function() {
@@ -672,6 +608,102 @@ $(function() {
 $("#dropzone").append("<div id='dropinfo'>Klik di sini, atau Taruh berkas ZIP (Shapefile), GPX, atau CSV.</div>");
 
 $(document).ready(function() {
+    var map = new ol.Map({
+        layers: default_layers,
+        target: map_div,
+        overlays: [overlay],
+        view: new ol.View({
+            // projection: 'EPSG:4326',
+            // center: [116.5, -4],
+            extent: merc_extent,
+            zoom: 5,
+            minZoom: 4,
+            maxZoom: 22
+        }),
+        controls: ol.control.defaults().extend([scline])
+    });
+
+    map.getView().fit(merc_extent, map.getSize());
+
+    // $(map.getViewport()).on('mousemove', mouseMoveHandler);
+
+
+    map.on('pointermove', pointerMoveHandler);
+
+    map.getViewport().addEventListener('mouseout', function() {
+        if (start_measure && $("#select_ukur").val() && ($("#satuan_panjang").val() != 0 || $("#satuan_luas").val() != 0)) {
+            helpTooltipElement.classList.add('hidden');
+        }
+    });
+
+
+    map.on('singleclick', function(evt) {
+        var coordinate = evt.coordinate;
+        var hdms = ol.coordinate.toStringHDMS(coordinate);
+        console.log()
+
+        if (!start_measure) {
+            map.forEachLayerAtPixel(evt.pixel, function(layer) {
+                console.warn('CALLBACK')
+            }, this, function(layer) {
+                console.log('FILTER')
+                var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
+                    return feature;
+                });
+                console.log(layer, feature);
+                if (feature) {
+                    return true
+                } else {
+                    return false
+                }
+            })
+
+            var layerWithWmsSource = map.forEachLayerAtPixel(evt.pixel,
+                function(layer) {
+                    // return only layers with ol.source.TileWMS
+                    var source = layer.getSource();
+                    if (source instanceof ol.source.TileWMS) {
+                        return layer;
+                    }
+                });
+            if (layerWithWmsSource) {
+                $('#popup-content').empty();
+                getInfo(evt, layerWithWmsSource);
+                overlay.setPosition(coordinate);
+            }
+
+            // Attempt to find a feature in one of the visible vector layers
+            var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
+                return feature;
+            });
+
+            var content_html;
+            if (feature) {
+                console.log(feature)
+                $('#popup-content').empty();
+                fkeys = feature.getKeys();
+                var tabel_info_head = "<table class='highlight'><thead><tr><th>Key</th><th>Value</th></tr></thead><tbody id='isiinfo'></tbody></table>";
+                $('#popup-content').append(tabel_info_head)
+                for (i = 0; i < fkeys.length; i++) {
+                    if (fkeys[i] != 'geometry') {
+                        // content_html = "<p>" + fkeys[i] + ": " + feature.get(fkeys[i]) + "</p>";
+                        // $('#popup-content').append(content_html)
+                        content_html = "<tr><td>" + fkeys[i] + "</td><td>" + feature.get(fkeys[i]) + "</td></tr>";
+                        $('#isiinfo').append(content_html)
+                    }
+                }
+                // $.each(feature.S, function(index, value) {
+                //     console.log(index, value);
+                //     content_html = "<p>" + index + ": " + value + "</p>";
+                //     $('#popup-content').append(content_html)
+                // });
+                // var content_html = '<p>You clicked here:</p><code>' + hdms + '</code>';
+                $('#popup-content').append(content_html)
+                overlay.setPosition(coordinate);
+            }
+        }
+    });
+
     // the "href" attribute of the modal trigger must specify the modal ID that wants to be triggered
     $('.modal').modal();
     $('.collapsible').collapsible();
@@ -731,6 +763,73 @@ $(document).ready(function() {
         item_html = "<div id='" + key + "' class='col s6 m4 l2'><div class='card'><div class='card-image'><img src='images/osm.png'><span class='card-title basemap'>" + basemap[key].get('title') + "</span></div></div></div>";
         $("#listbaselayers").append(item_html);
     }
+
+    $('#ukur_btn').on('click', function() {
+        if (box_ukur_visible) {
+            $('#box_ukur').hide();
+            box_ukur_visible = false;
+            start_measure = false;
+            map.removeInteraction(draw);
+            draw_source.clear();
+            $('.olm_tooltip.olm_tooltip-static').remove()
+        } else {
+            $('#box_ukur').show();
+            box_ukur_visible = true;
+            start_measure = true;
+            // addInteraction();
+        }
+    });
+
+    $("#select_ukur").on('change', function() {
+        console.log($("#select_ukur").val())
+        if ($("#select_ukur").val() == 1) {
+            $('#panjang').show();
+            $('#luas').hide();
+        } else {
+            $('#panjang').hide();
+            $('#luas').show();
+        }
+        if ($("#satuan_panjang").val() || $("#satuan_luas").val()) {
+            map.removeInteraction(draw);
+            draw_source.clear();
+            $('.olm_tooltip.olm_tooltip-static').remove()
+            addInteraction();
+        }
+    });
+
+    $("#satuan_panjang").on('change', function() {
+        map.removeInteraction(draw);
+        draw_source.clear();
+        $('.olm_tooltip.olm_tooltip-static').remove()
+        addInteraction();
+    })
+
+    $("#satuan_luas").on('change', function() {
+        map.removeInteraction(draw);
+        draw_source.clear();
+        $('.olm_tooltip.olm_tooltip-static').remove()
+        addInteraction();
+    })
+
+    $('#main_menu').on('click', function() {
+        if (box_ukur_visible) {
+            $('#box_ukur').hide();
+            box_ukur_visible = false;
+            start_measure = false;
+            map.removeInteraction(draw);
+            draw_source.clear();
+            $('.olm_tooltip.olm_tooltip-static').remove()
+        } else {
+            $('#box_ukur').hide();
+            box_ukur_visible = false;
+            start_measure = false;
+            map.removeInteraction(draw);
+            draw_source.clear();
+            $('.olm_tooltip.olm_tooltip-static').remove()
+        }
+    });
+
+
 });
 
 
@@ -921,102 +1020,6 @@ var pointerMoveHandler = function(evt) {
         helpTooltipElement.classList.remove('hidden');
     }
 };
-
-var map = new ol.Map({
-    layers: default_layers,
-    target: map_div,
-    overlays: [overlay],
-    view: new ol.View({
-        // projection: 'EPSG:4326',
-        // center: [116.5, -4],
-        extent: merc_extent,
-        zoom: 5,
-        minZoom: 4,
-        maxZoom: 22
-    }),
-    controls: ol.control.defaults().extend([scline])
-});
-
-map.getView().fit(merc_extent, map.getSize());
-
-// $(map.getViewport()).on('mousemove', mouseMoveHandler);
-
-
-map.on('pointermove', pointerMoveHandler);
-
-map.getViewport().addEventListener('mouseout', function() {
-    if (start_measure && $("#select_ukur").val() && ($("#satuan_panjang").val() != 0 || $("#satuan_luas").val() != 0)) {
-        helpTooltipElement.classList.add('hidden');
-    }
-});
-
-
-map.on('singleclick', function(evt) {
-    var coordinate = evt.coordinate;
-    var hdms = ol.coordinate.toStringHDMS(coordinate);
-    console.log()
-
-    if (!start_measure) {
-        map.forEachLayerAtPixel(evt.pixel, function(layer) {
-            console.warn('CALLBACK')
-        }, this, function(layer) {
-            console.log('FILTER')
-            var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
-                return feature;
-            });
-            console.log(layer, feature);
-            if (feature) {
-                return true
-            } else {
-                return false
-            }
-        })
-
-        var layerWithWmsSource = map.forEachLayerAtPixel(evt.pixel,
-            function(layer) {
-                // return only layers with ol.source.TileWMS
-                var source = layer.getSource();
-                if (source instanceof ol.source.TileWMS) {
-                    return layer;
-                }
-            });
-        if (layerWithWmsSource) {
-            $('#popup-content').empty();
-            getInfo(evt, layerWithWmsSource);
-            overlay.setPosition(coordinate);
-        }
-
-        // Attempt to find a feature in one of the visible vector layers
-        var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
-            return feature;
-        });
-
-        var content_html;
-        if (feature) {
-            console.log(feature)
-            $('#popup-content').empty();
-            fkeys = feature.getKeys();
-            var tabel_info_head = "<table class='highlight'><thead><tr><th>Key</th><th>Value</th></tr></thead><tbody id='isiinfo'></tbody></table>";
-            $('#popup-content').append(tabel_info_head)
-            for (i = 0; i < fkeys.length; i++) {
-                if (fkeys[i] != 'geometry') {
-                    // content_html = "<p>" + fkeys[i] + ": " + feature.get(fkeys[i]) + "</p>";
-                    // $('#popup-content').append(content_html)
-                    content_html = "<tr><td>" + fkeys[i] + "</td><td>" + feature.get(fkeys[i]) + "</td></tr>";
-                    $('#isiinfo').append(content_html)
-                }
-            }
-            // $.each(feature.S, function(index, value) {
-            //     console.log(index, value);
-            //     content_html = "<p>" + index + ": " + value + "</p>";
-            //     $('#popup-content').append(content_html)
-            // });
-            // var content_html = '<p>You clicked here:</p><code>' + hdms + '</code>';
-            $('#popup-content').append(content_html)
-            overlay.setPosition(coordinate);
-        }
-    }
-});
 
 function getInfo(evt, layer) {
     var resolution = map.getView().getResolution();
