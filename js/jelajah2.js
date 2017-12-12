@@ -606,26 +606,16 @@ $(function() {
 $("#dropzone").append("<div id='dropinfo'>Klik di sini, atau Taruh berkas ZIP (Shapefile), GPX, atau CSV.</div>");
 
 $(document).ready(function() {
-
-
-    // the "href" attribute of the modal trigger must specify the modal ID that wants to be triggered
     $('.modal').modal();
     $('.collapsible').collapsible();
     var sortableel = document.getElementById('sortableul');
     var sortableul = Sortable.create(sortableel, {
         handle: ".collapsible-header",
         onEnd: function(e) {
-            var itemEl = e.item;
-            var p_id = itemEl.attributes.id.value;
-            curidx = layer[p_id].getZIndex();
-            if (e.newIndex > e.oldIndex) {
-                layer[p_id].setZIndex(e.newIndex + 1);
-            } else if (e.newIndex < e.oldIndex) {
-                layer[p_id].setZIndex(e.newIndex - 1);
-            } else {
-                // layer[p_id].setZIndex(e.newIndex + 1);
-            }
-            console.log(e.item, e.oldIndex, e.newIndex);
+            listindex = $("#sortableul li");
+            listindex.each(function(index, li) {
+                layer[li.id].setZIndex(index)
+            })
         }
     });
     // $('ul.collapsible').sortable();
