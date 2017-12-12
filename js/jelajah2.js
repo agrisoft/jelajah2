@@ -738,65 +738,98 @@ $(document).ready(function() {
 
 
 // Get Data
-$.get(palapa_api_url + "getWMSlayers", function(data) {
-    window.raw_local_wms = data;
-    listw = [];
-    for (j = 0; j < data.length; j++) {
-        listw.push(data[j].workspace);
-    }
-    list_workspace = uniqueArray(listw);
-    console.log(list_workspace);
-    for (i = 0; i < data.length; i++) {
-        item_html = "<li id='" + data[i].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + data[i].layer_nativename + "'>" + data[i].workspace + " " + data[i].layer_name + "</span></li>";
-        $('#layers_item_list').append(item_html);
-    }
-    for (k = 0; k < list_workspace.length; k++) {
-        w_html = "<option value='" + list_workspace[k] + "'>" + list_workspace[k] + "</option>";
-        console.log(w_html)
-        $('#list_workspace').append(w_html);
-    }
-    $('select').material_select();
-    $('.modal').modal();
-});
+// $.get(palapa_api_url + "getWMSlayers", function(data) {
 
-$.get(palapa_api_url + "extsrv/list", function(data) {
-    window.ext_srv = JSON.parse(data);
-    tipe = 'WMS';
-    for (i = 0; i < ext_srv.length; i++) {
-        if (ext_srv[i].type == 'OGC WMS') { tipe = 'WMS' } else { tipe = 'ESRI' };
-        item_html = "<option value='" + ext_srv[i].url + "'>" + ext_srv[i].name + "</option>";
-        $('#ext_srv_type').append(item_html);
-    }
-})
+// });
 
-$.get(palapa_api_url + "basemaps/list", function(data) {
-    window.basemaps = JSON.parse(data);
-    for (i = 0; i < basemaps.length; i++) {
-        basename = basemaps[i].name.replace(' ', '_').toLowerCase();
-        if (basemaps[i].type == 'TMS') {
-            window.basemap[basename] = new ol.layer.Tile({
-                title: basemaps[i].name,
-                visible: false,
-                preload: Infinity,
-                source: new ol.source.XYZ({
-                    url: basemaps[i].url
-                }),
-                zIndex: -10
-            });
-        } else {
-            window.basemap[basename] = new ol.layer.Tile({
-                title: basemaps[i].name,
-                visible: false,
-                preload: Infinity,
-                source: new ol.source.TileWMS({
-                    url: basemaps[i].url,
-                    params: { LAYERS: basemaps[i].params, VERSION: '1.1.1' }
-                }),
-                zIndex: -10
-            });
+
+function getLocalLayers() {
+    $.ajax({
+        url: palapa_api_url + "getWMSlayers",
+        async: false,
+        success: function(data) {
+            window.raw_local_wms = data;
+            listw = [];
+            for (j = 0; j < data.length; j++) {
+                listw.push(data[j].workspace);
+            }
+            list_workspace = uniqueArray(listw);
+            console.log(list_workspace);
+            for (i = 0; i < data.length; i++) {
+                item_html = "<li id='" + data[i].layer_nativename + "' class='collection-item'><i id='add_check' class='material-icons'>check_box_outline_blank</i> <span class='layermark' id='" + data[i].layer_nativename + "'>" + data[i].workspace + " " + data[i].layer_name + "</span></li>";
+                $('#layers_item_list').append(item_html);
+            }
+            for (k = 0; k < list_workspace.length; k++) {
+                w_html = "<option value='" + list_workspace[k] + "'>" + list_workspace[k] + "</option>";
+                console.log(w_html)
+                $('#list_workspace').append(w_html);
+            }
+            $('select').material_select();
+            $('.modal').modal();
         }
-    }
-})
+    })
+}
+getLocalLayers();
+// $.get(palapa_api_url + "extsrv/list", function(data) {
+
+// })
+
+function getExtService() {
+    $.ajax({
+        url: palapa_api_url + "extsrv/list",
+        async: false,
+        success: function(data) {
+            window.ext_srv = JSON.parse(data);
+            tipe = 'WMS';
+            for (i = 0; i < ext_srv.length; i++) {
+                if (ext_srv[i].type == 'OGC WMS') { tipe = 'WMS' } else { tipe = 'ESRI' };
+                item_html = "<option value='" + ext_srv[i].url + "'>" + ext_srv[i].name + "</option>";
+                $('#ext_srv_type').append(item_html);
+            }
+        }
+    })
+}
+getExtService();
+
+function getBasemaps() {
+    $.ajax({
+        url: palapa_api_url + "basemaps/list",
+        async: false,
+        success: function(data) {
+            window.basemaps = JSON.parse(data);
+            for (i = 0; i < basemaps.length; i++) {
+                basename = basemaps[i].name.replace(' ', '_').toLowerCase();
+                if (basemaps[i].type == 'TMS') {
+                    window.basemap[basename] = new ol.layer.Tile({
+                        title: basemaps[i].name,
+                        visible: false,
+                        preload: Infinity,
+                        source: new ol.source.XYZ({
+                            url: basemaps[i].url
+                        }),
+                        zIndex: -10
+                    });
+                } else {
+                    window.basemap[basename] = new ol.layer.Tile({
+                        title: basemaps[i].name,
+                        visible: false,
+                        preload: Infinity,
+                        source: new ol.source.TileWMS({
+                            url: basemaps[i].url,
+                            params: { LAYERS: basemaps[i].params, VERSION: '1.1.1' }
+                        }),
+                        zIndex: -10
+                    });
+                }
+            }
+        }
+    })
+}
+getBasemaps();
+
+// $.get(palapa_api_url + "basemaps/list", function(data) {
+
+// })
 
 // Custom control
 
@@ -1030,15 +1063,31 @@ function getInfo(evt, layer) {
         var infos;
         var tabel_info_head = "<table class='highlight'><thead><tr><th>Key</th><th>Value</th></tr></thead><tbody id='isiinfo'></tbody></table>";
         $('#popup-content').append(tabel_info_head)
-        $.get(url, function(data) {
-            console.log(data)
-            infos = data.features[0].properties;
-            for (var key in infos) {
-                var value = infos[key];
-                content_html = "<tr><td>" + key + "</td><td>" + value + "</td></tr>";
-                $('#isiinfo').append(content_html)
-            }
-        })
+
+        function getInnerInfo() {
+            $.ajax({
+                url: url,
+                async: false,
+                success: function(data) {
+                    infos = data.features[0].properties;
+                    for (var key in infos) {
+                        var value = infos[key];
+                        content_html = "<tr><td>" + key + "</td><td>" + value + "</td></tr>";
+                        $('#isiinfo').append(content_html)
+                    }
+                }
+            });
+        }
+        getInnerInfo();
+        // $.get(url, function(data) {
+        //     console.log(data)
+        //     infos = data.features[0].properties;
+        //     for (var key in infos) {
+        //         var value = infos[key];
+        //         content_html = "<tr><td>" + key + "</td><td>" + value + "</td></tr>";
+        //         $('#isiinfo').append(content_html)
+        //     }
+        // })
     }
 }
 
@@ -1075,17 +1124,36 @@ function getInfo(evt, layer) {
 
 $("#caribtn").click(function() {
     geocaritext = document.getElementById('cari_geocoding').value;
-    $.get("http://nominatim.openstreetmap.org/search?format=jsonv2&polygon_geojson=1&q=" + geocaritext, function(data, status) {
-        window.hasil_cari = data;
-        // console.log(data);
-        $('#list_hasil').empty();
-        for (i = 0; i < data.length; i++) {
-            lihtml = "<li id='" + data[i].place_id + "' class='collection-item avatar'><i id='" + data[i].place_id + "' class='material-icons circle green piccari'>add_location</i><div id='" + data[i].place_id + "' class='title'>" + data[i].display_name + "</div></li>";
-            $('#list_hasil').append(lihtml);
-            console.log(data[i]);
-        }
-        $('#modal_cari').modal('open');
-    });
+
+    function getGeocoding() {
+        $.ajax({
+            url: "http://nominatim.openstreetmap.org/search?format=jsonv2&polygon_geojson=1&q=" + geocaritext,
+            async: false,
+            success: function(data) {
+                window.hasil_cari = data;
+                // console.log(data);
+                $('#list_hasil').empty();
+                for (i = 0; i < data.length; i++) {
+                    lihtml = "<li id='" + data[i].place_id + "' class='collection-item avatar'><i id='" + data[i].place_id + "' class='material-icons circle green piccari'>add_location</i><div id='" + data[i].place_id + "' class='title'>" + data[i].display_name + "</div></li>";
+                    $('#list_hasil').append(lihtml);
+                    console.log(data[i]);
+                }
+                $('#modal_cari').modal('open');
+            }
+        });
+    }
+    getGeocoding()
+        // $.get("http://nominatim.openstreetmap.org/search?format=jsonv2&polygon_geojson=1&q=" + geocaritext, function(data, status) {
+        //     window.hasil_cari = data;
+        //     // console.log(data);
+        //     $('#list_hasil').empty();
+        //     for (i = 0; i < data.length; i++) {
+        //         lihtml = "<li id='" + data[i].place_id + "' class='collection-item avatar'><i id='" + data[i].place_id + "' class='material-icons circle green piccari'>add_location</i><div id='" + data[i].place_id + "' class='title'>" + data[i].display_name + "</div></li>";
+        //         $('#list_hasil').append(lihtml);
+        //         console.log(data[i]);
+        //     }
+        //     $('#modal_cari').modal('open');
+        // });
 });
 
 $('#list_hasil').on('click', function(e) {
@@ -1352,23 +1420,26 @@ $('#getwmslist').on('click', function() {
     srv_type = $('#srv_type').val();
     srv_url = $('#url_servis').val();
     if (srv_type == 'WMS') {
-        wmscapurl = srv_url + '?service=wms&request=GetCapabilities';
-        wmscapobj = $.get(_proxy + encodeURIComponent(wmscapurl));
-        // wmscapurl = srv_url + '?service=wms&request=GetCapabilities';
-        // wmscapobj = $.get(wmscapurl);
-        // wmscap = new WMSCapabilities().parse(wmscapobj.responseText);
-        setTimeout(() => {
-            wmscap = new WMSCapabilities().parse(wmscapobj.responseText);
-            console.log(wmscap)
-            wmslayerlist = wmscap.Capability.Layer.Layer;
-            window.raw_out_wms = wmslayerlist;
-            console.log(wmslayerlist)
-            $('#wms_item_list').empty();
-            for (i = 0; i < wmslayerlist.length; i++) {
-                item_html = "<li id='" + wmslayerlist[i].Name + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + wmslayerlist[i].Name + "'>" + wmslayerlist[i].Title + "</span></li>";
-                $('#wms_item_list').append(item_html);
-            }
-        }, 2500);
+        function getWMSdata() {
+            wmscapurl = srv_url + '?service=wms&request=GetCapabilities';
+            $.ajax({
+                url: _proxy + encodeURIComponent(wmscapurl),
+                async: false,
+                success: function(wmscapobj) {
+                    wmscap = new WMSCapabilities().parse(wmscapobj);
+                    console.log(wmscap)
+                    wmslayerlist = wmscap.Capability.Layer.Layer;
+                    window.raw_out_wms = wmslayerlist;
+                    console.log(wmslayerlist)
+                    $('#wms_item_list').empty();
+                    for (i = 0; i < wmslayerlist.length; i++) {
+                        item_html = "<li id='" + wmslayerlist[i].Name + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + wmslayerlist[i].Name + "'>" + wmslayerlist[i].Title + "</span></li>";
+                        $('#wms_item_list').append(item_html);
+                    }
+                }
+            })
+        }
+        getWMSdata();
     } else {
 
     }
@@ -1433,21 +1504,25 @@ $("#ext_srv_type").on('change', function() {
             if (ext_srv[i].type == 'OGC WMS') { tipe = 'WMS' } else { tipe = 'ESRI' };
             $("#ext_srv_t").text(ext_srv[i].type);
             if (tipe == 'WMS') {
-                wmscapurl = ext_srv[i].url + '?service=wms&request=GetCapabilities';
-                wmscapobj = $.get(_proxy + encodeURIComponent(wmscapurl));
-                // wmscap = new WMSCapabilities().parse(wmscapobj.responseText);
-                setTimeout(() => {
-                    wmscap = new WMSCapabilities().parse(wmscapobj.responseText);
-                    console.log(wmscap)
-                    wmslayerlist = wmscap.Capability.Layer.Layer;
-                    window.raw_out_wms = wmslayerlist;
-                    console.log(wmslayerlist)
-                    $('#wms_item_list').empty();
-                    for (i = 0; i < wmslayerlist.length; i++) {
-                        item_html = "<li id='" + wmslayerlist[i].Name + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + wmslayerlist[i].Name + "'>" + wmslayerlist[i].Title + "</span></li>";
-                        $('#ext_wms_item_list').append(item_html);
-                    }
-                }, 1500);
+                function getWMSdata() {
+                    wmscapurl = ext_srv[i].url + '?service=wms&request=GetCapabilities';
+                    $.ajax({
+                        url: _proxy + encodeURIComponent(wmscapurl),
+                        async: false,
+                        success: function(wmscapobj) {
+                            wmscap = new WMSCapabilities().parse(wmscapobj);
+                            wmslayerlist = wmscap.Capability.Layer.Layer;
+                            window.raw_out_wms = wmslayerlist;
+                            console.log(wmslayerlist)
+                            $('#wms_item_list').empty();
+                            for (i = 0; i < wmslayerlist.length; i++) {
+                                item_html = "<li id='" + wmslayerlist[i].Name + "' class='collection-item'><i id='add_check' class='material-icons'>add_circle</i> <span class='layermark' id='" + wmslayerlist[i].Name + "'>" + wmslayerlist[i].Title + "</span></li>";
+                                $('#ext_wms_item_list').append(item_html);
+                            }
+                        }
+                    })
+                }
+                getWMSdata()
             } else {
                 esricapurl = ext_srv[i].url + '?f=pjson';
                 var esricapobj;
