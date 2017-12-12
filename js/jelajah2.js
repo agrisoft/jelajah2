@@ -933,8 +933,8 @@ var layer_rbibaru = new ol.layer.Tile({
     visible: false,
     preload: Infinity,
     source: new ol.source.TileWMS({
-        url: 'http://dev1.agrisoft-cb.com:8080/geoserver/gwc/service/wms',
-        params: { LAYERS: 'basemap-rbi', VERSION: '1.1.1' }
+        url: 'http://202.4.179.123:8080/geoserver/gwc/service/wms',
+        params: { LAYERS: 'basemap_rbi:basemap', VERSION: '1.1.1' }
     }),
     zIndex: -10
 });
