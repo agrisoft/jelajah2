@@ -13,6 +13,7 @@ var raw_out_wms;
 var ext_srv;
 var basemaps;
 var basemap = [];
+var front_layers = [];
 var list_workspace;
 var hasil_cari;
 var container = document.getElementById('popup');
@@ -88,6 +89,44 @@ function olAddWMSLayer(serviceUrl, layername, layermark, min_x, min_y, max_x, ma
         extent = layer[rndlayerid].getExtent();
         map.getView().fit(extent, map.getSize());
         legend_url = serviceUrl + '?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&legend_options=fontAntiAliasing:true&LAYER=' + layer_nativename;
+        legend_html = "<img src='" + legend_url + "'>";
+        $('#wmslegend_' + rndlayerid).append(legend_html);
+        layer_index.push(rndlayerid);
+        layer[rndlayerid].setZIndex(layer.length);
+    }, 1000);
+}
+
+function olAddDEFLayer(layername, layermark, layer_nativename, aktif, min_x, min_y, max_x, max_y) {
+    setTimeout(() => {
+        console.log(layername, layermark, layer_nativename, aktif, min_x, min_y, max_x, max_y)
+            // rndlayerid = randomNumber()
+        window.layer_count = layer_count + 1;
+        rndlayerid = layer_count;
+        layer_source[rndlayerid] = new ol.source.TileWMS({
+            url: local_gs,
+            params: { LAYERS: layername, TILED: true, SRS: 'EPSG:3857' },
+            crossOrigin: 'anonymous'
+        })
+        layer[rndlayerid] = new ol.layer.Tile({
+            title: layermark,
+            tipe: 'WMS',
+            visible: true,
+            preload: Infinity,
+            extent: extToMerc([min_x, min_y, max_x, max_y]),
+            source: layer_source[rndlayerid]
+        });
+        map.addLayer(layer[rndlayerid]);
+        console.log(rndlayerid, layermark, layer[rndlayerid].get('title'))
+        if (aktif) {
+            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+            $('#sortableul').append(listappend);
+        } else {
+            listappend = "<li id='" + rndlayerid + "'><div class='collapsible-header'><div class='layer_control'><i id='visibility' class='material-icons'>check_box_outline_blank</i>" + layer[rndlayerid].get('title') + "</div><!--<i id='getinfo' class='material-icons right'>comment</i>--><i id='zextent' class='material-icons right'>loupe</i><i id='remove' class='material-icons right'>cancel</i></div></div><div class='collapsible-body'><div class='row opa'><span class='col s4'><i class='material-icons' style='        padding-right: 15px; position: relative; bottom: -6px;'>opacity</i>Opacity</span><div class='col s8 range-field'><input type='range' id='opacity' min='0' max='100' value='100'/></div></div><span id='wmslegend_" + rndlayerid + "'></span></div></li>";
+            $('#sortableul').append(listappend);
+            layer[rndlayerid].setVisible(false);
+        }
+        info_layer.push(rndlayerid);
+        legend_url = local_gs + '?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&legend_options=fontAntiAliasing:true&LAYER=' + layer_nativename;
         legend_html = "<img src='" + legend_url + "'>";
         $('#wmslegend_' + rndlayerid).append(legend_html);
         layer_index.push(rndlayerid);
@@ -727,6 +766,10 @@ $(document).ready(function() {
         }
     });
 
+    setTimeout(() => {
+        getDefLayers();
+
+    }, 1000);
 
 });
 
@@ -820,6 +863,28 @@ function getBasemaps() {
     })
 }
 getBasemaps();
+
+function getDefLayers() {
+    $.ajax({
+        url: palapa_api_url + "front_layers",
+        async: false,
+        success: function(data) {
+            window.front_layers = data;
+            console.log(front_layers)
+            for (i = 1; i < front_layers.length; i++) {
+                // setTimeout(() => {
+                layer = front_layers[i];
+                for (j = 1; j < raw_local_wms.length; j++) {
+                    if (raw_local_wms[j].layer_nativename == layer.layer_nativename) {
+                        console.log(raw_local_wms[j], layer.layer_nativename, layer.layer_title, layer.layer_nativename, layer.aktif, raw_local_wms[j].layer_minx, raw_local_wms[j].layer_miny, raw_local_wms[j].layer_maxx, raw_local_wms[j].layer_maxy)
+                        olAddDEFLayer(layer.layer_nativename, layer.layer_title, layer.layer_nativename, layer.aktif, raw_local_wms[j].layer_minx, raw_local_wms[j].layer_miny, raw_local_wms[j].layer_maxx, raw_local_wms[j].layer_maxy);
+                    }
+                }
+                // }, 1000);
+            }
+        }
+    })
+}
 
 // $.get(palapa_api_url + "basemaps/list", function(data) {
 
