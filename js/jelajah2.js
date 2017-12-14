@@ -36,6 +36,17 @@ var continueLineMsg = 'Klik untuk mulai menggambar garis';
 var listener;
 
 // Functions
+function getSimpulInfo() {
+    $.ajax({
+        url: palapa_api_url + "sisteminfo",
+        async: false,
+        success: function(data) {
+            window.map_extent = [parseFloat(data.extent[0]), parseFloat(data.extent[1]), parseFloat(data.extent[2]), parseFloat(data.extent[3])]
+        }
+    })
+}
+getSimpulInfo()
+
 function randomNumber() {
     return Math.floor((Math.random() * 10000) + 1);
 }
